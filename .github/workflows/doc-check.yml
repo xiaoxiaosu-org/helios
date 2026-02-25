@@ -1,0 +1,333 @@
+name: Documentation & Architecture Checks
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+    branches: ["**"]
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Compute changed files
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          EVENT_NAME="${{ github.event_name }}"
+
+          : > changed_files.txt
+          : > changed_name_status.txt
+          : > diff_meta.env
+
+          if [ "${EVENT_NAME}" = "pull_request" ]; then
+            BASE_REF="${{ github.base_ref }}"
+            if [ -z "${BASE_REF}" ]; then
+              echo "pull_request 事件但 base_ref 为空，无法计算 diff。" >&2
+              exit 1
+            fi
+
+            git fetch --no-tags --prune origin "${BASE_REF}:refs/remotes/origin/${BASE_REF}"
+            DIFF_RANGE="origin/${BASE_REF}...HEAD"
+
+            echo "DIFF_MODE=pull_request" >> diff_meta.env
+            echo "DIFF_RANGE=${DIFF_RANGE}" >> diff_meta.env
+            echo "BASE_REF=${BASE_REF}" >> diff_meta.env
+
+            git diff --name-only "${DIFF_RANGE}" > changed_files.txt
+            git diff --name-status "${DIFF_RANGE}" > changed_name_status.txt
+          else
+            BEFORE_SHA="${{ github.event.before }}"
+            AFTER_SHA="${{ github.sha }}"
+
+            echo "DIFF_MODE=push" >> diff_meta.env
+            echo "BEFORE_SHA=${BEFORE_SHA}" >> diff_meta.env
+            echo "AFTER_SHA=${AFTER_SHA}" >> diff_meta.env
+
+            if [ "${BEFORE_SHA}" = "0000000000000000000000000000000000000000" ]; then
+              echo "IS_ROOT=1" >> diff_meta.env
+              git diff --name-only --root "${AFTER_SHA}" > changed_files.txt
+              git diff --name-status --root "${AFTER_SHA}" > changed_name_status.txt
+            else
+              echo "IS_ROOT=0" >> diff_meta.env
+              git diff --name-only "${BEFORE_SHA}" "${AFTER_SHA}" > changed_files.txt
+              git diff --name-status "${BEFORE_SHA}" "${AFTER_SHA}" > changed_name_status.txt
+            fi
+          fi
+
+          echo "Changed files:"
+          cat changed_files.txt || true
+          echo "Changed name-status:"
+          cat changed_name_status.txt || true
+          echo "Diff meta:"
+          cat diff_meta.env || true
+
+      - name: Enforce docs top-level structure and ADR base files
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          required_dirs=(
+            "docs/00-术语表"
+            "docs/01-产品"
+            "docs/02-架构"
+            "docs/03-领域模型"
+            "docs/04-接口"
+            "docs/05-事件"
+            "docs/06-数据"
+            "docs/07-运行态"
+            "docs/08-安全"
+            "docs/09-ADR-架构决策"
+          )
+
+          for d in "${required_dirs[@]}"; do
+            if [ ! -d "$d" ]; then
+              echo "缺少固定 docs 顶层目录：$d"
+              exit 1
+            fi
+          done
+
+          required_files=(
+            "docs/09-ADR-架构决策/ADR-模板.md"
+            "docs/09-ADR-架构决策/ADR-索引.md"
+          )
+
+          for f in "${required_files[@]}"; do
+            if [ ! -f "$f" ]; then
+              echo "缺少 ADR 基础文件：$f"
+              exit 1
+            fi
+          done
+
+          for d in "${required_dirs[@]}"; do
+            if ! find "$d" -maxdepth 1 -type f -name "*.md" | grep -q .; then
+              echo "顶层目录缺少总览/索引页（至少一个 *.md）：$d"
+              exit 1
+            fi
+          done
+
+      - name: Enforce docs update when business code/config/sql changes
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          if grep -E "^(modules|apps|services|src)/.*(\.(java|kt|xml|yml|yaml|sql|properties|json|conf|toml|gradle|kts|js|jsx|ts|tsx|py|go|rs)|/(pom\.xml|build\.gradle(\.kts)?))$" changed_files.txt >/dev/null; then
+            if ! grep -E "^(docs/)" changed_files.txt >/dev/null; then
+              echo "检测到业务代码/配置/SQL 等变更，但未更新 docs 文档。"
+              echo "建议：按契约类型更新 docs/03-领域模型、docs/04-接口、docs/05-事件、docs/06-数据 等。"
+              exit 1
+            fi
+          fi
+
+      - name: Enforce contract-specific docs updates
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          need_domain=0
+          need_api=0
+          need_event=0
+          need_data=0
+          need_runtime=0
+          need_security=0
+
+          while IFS= read -r f; do
+            case "$f" in
+              modules/*|apps/*|services/*|src/*)
+                case "$f" in
+                  */controller/*|*/controllers/*|*/web/*|*/api/*|*/rest/*|*/grpc/*)
+                    need_api=1 ;;
+                esac
+
+                case "$f" in
+                  */event/*|*/events/*|*/mq/*|*/kafka/*|*/rabbit*/*|*/producer/*|*/consumer/*|*/schema/*|*/schemas/*)
+                    need_event=1 ;;
+                esac
+
+                case "$f" in
+                  */entity/*|*/entities/*|*/mapper/*|*/repository/*|*/dao/*|*/dal/*|*/migration/*|*/migrations/*|*.sql)
+                    need_data=1 ;;
+                esac
+
+                case "$f" in
+                  */domain/*|*/workflow/*|*/state/*|*/decision/*|*/rule/*|*/rules/*|*/service/*)
+                    need_domain=1 ;;
+                esac
+
+                case "$f" in
+                  */trace/*|*/context/*|*/runtime/*|*/cache/*|*/window/*|*/replay/*)
+                    need_runtime=1 ;;
+                esac
+
+                case "$f" in
+                  */security/*|*/auth/*|*/permission/*|*/audit/*)
+                    need_security=1 ;;
+                esac
+                ;;
+            esac
+          done < changed_files.txt
+
+          touched_domain_docs=$(grep -E "^docs/03-领域模型/" changed_files.txt || true)
+          touched_api_docs=$(grep -E "^docs/04-接口/" changed_files.txt || true)
+          touched_event_docs=$(grep -E "^docs/05-事件/" changed_files.txt || true)
+          touched_data_docs=$(grep -E "^docs/06-数据/" changed_files.txt || true)
+          touched_runtime_docs=$(grep -E "^docs/07-运行态/" changed_files.txt || true)
+          touched_security_docs=$(grep -E "^docs/08-安全/" changed_files.txt || true)
+
+          if [ "$need_domain" -eq 1 ] && [ -z "$touched_domain_docs" ]; then
+            echo "检测到领域/流程/状态相关变更，但未更新 docs/03-领域模型/。"
+            exit 1
+          fi
+          if [ "$need_api" -eq 1 ] && [ -z "$touched_api_docs" ]; then
+            echo "检测到接口相关变更，但未更新 docs/04-接口/。"
+            exit 1
+          fi
+          if [ "$need_event" -eq 1 ] && [ -z "$touched_event_docs" ]; then
+            echo "检测到事件相关变更，但未更新 docs/05-事件/。"
+            exit 1
+          fi
+          if [ "$need_data" -eq 1 ] && [ -z "$touched_data_docs" ]; then
+            echo "检测到数据/持久化相关变更，但未更新 docs/06-数据/。"
+            exit 1
+          fi
+          if [ "$need_runtime" -eq 1 ] && [ -z "$touched_runtime_docs" ]; then
+            echo "检测到运行态（trace/context/cache/window/replay）相关变更，但未更新 docs/07-运行态/。"
+            exit 1
+          fi
+          if [ "$need_security" -eq 1 ] && [ -z "$touched_security_docs" ]; then
+            echo "检测到安全/权限/审计相关变更，但未更新 docs/08-安全/。"
+            exit 1
+          fi
+
+      - name: Enforce OpenAPI and event schema placement
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          misplaced_api=$(grep -E "^docs/04-接口/.*\.(ya?ml|json)$" changed_files.txt | grep -vE "^docs/04-接口/OpenAPI/" || true)
+          if [ -n "$misplaced_api" ]; then
+            echo "检测到 docs/04-接口/ 下的 YAML/JSON 产物未放在 docs/04-接口/OpenAPI/："
+            echo "$misplaced_api"
+            exit 1
+          fi
+
+          misplaced_event=$(grep -E "^docs/05-事件/.*\.(ya?ml|json|avsc|proto)$" changed_files.txt | grep -vE "^docs/05-事件/Schemas/" || true)
+          if [ -n "$misplaced_event" ]; then
+            echo "检测到 docs/05-事件/ 下的 Schema 产物未放在 docs/05-事件/Schemas/："
+            echo "$misplaced_event"
+            exit 1
+          fi
+
+      - name: Enforce ADR/HOTFIX when architecture/security/runtime/compat changes
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          is_hotfix_context=0
+          REF_NAME="${GITHUB_HEAD_REF:-${GITHUB_REF_NAME:-}}"
+          if echo "${REF_NAME}" | grep -Eiq "(^|/)(hotfix|hf)(/|$|-)"; then
+            is_hotfix_context=1
+          fi
+
+          adr_required=0
+          security_adr_required=0
+
+          if grep -E "^docs/02-架构/" changed_files.txt >/dev/null; then adr_required=1; fi
+          if grep -E "^docs/07-运行态/" changed_files.txt >/dev/null; then adr_required=1; fi
+          if grep -E "^docs/08-安全/" changed_files.txt >/dev/null; then adr_required=1; security_adr_required=1; fi
+          if grep -E "^docs/05-事件/版本与兼容策略\.md$" changed_files.txt >/dev/null; then adr_required=1; fi
+          if grep -E "^docs/05-事件/Schemas/" changed_files.txt >/dev/null; then adr_required=1; fi
+          if grep -E "^docs/06-数据/" changed_files.txt >/dev/null; then adr_required=1; fi
+          if grep -E "^(modules|apps|services|src)/.*\.(yml|yaml|properties|json|toml|conf)$" changed_files.txt >/dev/null; then adr_required=1; fi
+          if grep -E "^(modules|apps|services|src)/.*/(pom\.xml|build\.gradle(\.kts)?|package\.json|pyproject\.toml|requirements(-dev)?\.txt)$" changed_files.txt >/dev/null; then adr_required=1; fi
+
+          added_adr=$(grep -E "^A[[:space:]]+docs/09-ADR-架构决策/ADR-[0-9]{8}-.*\.md$" changed_name_status.txt || true)
+          added_hotfix=$(grep -E "^A[[:space:]]+docs/09-ADR-架构决策/HOTFIX-[0-9]{8}-.*\.md$" changed_name_status.txt || true)
+          touched_adr_index=$(grep -E "^[AMR][[:space:]]+docs/09-ADR-架构决策/ADR-索引\.md$" changed_name_status.txt || true)
+
+          if [ "$security_adr_required" -eq 1 ] && [ -z "$added_adr" ]; then
+            echo "检测到安全文档变更。按 AGENTS.md 要求，安全策略变化必须新增 ADR（HOTFIX 不能替代 ADR）。"
+            exit 1
+          fi
+
+          if [ "$adr_required" -eq 1 ] && [ -z "$added_adr" ]; then
+            if [ "$is_hotfix_context" -eq 1 ] && [ -n "$added_hotfix" ]; then
+              echo "hotfix 场景下检测到关键变更，已新增 HOTFIX 记录，允许临时通过。"
+            else
+              echo "检测到关键变更（架构/运行态/兼容策略/事件Schema/数据/关键配置），但未新增 ADR。"
+              echo "常规场景必须新增：docs/09-ADR-架构决策/ADR-YYYYMMDD-简短标题.md"
+              echo "仅 hotfix 分支场景可使用 HOTFIX-YYYYMMDD-简短标题.md 作为临时记录。"
+              exit 1
+            fi
+          fi
+
+          if [ -n "$added_hotfix" ] && [ "$is_hotfix_context" -ne 1 ]; then
+            echo "检测到新增 HOTFIX 记录，但当前不是 hotfix 上下文（分支名未命中 hotfix/hf）。"
+            echo "请使用 ADR，或在真正的 hotfix 分支中提交。"
+            exit 1
+          fi
+
+          if [ -n "$added_adr" ] && [ -z "$touched_adr_index" ]; then
+            echo "检测到新增 ADR，但未更新 docs/09-ADR-架构决策/ADR-索引.md"
+            exit 1
+          fi
+
+      - name: Prevent removing trace fields without ADR/HOTFIX
+        shell: bash
+        run: |
+          set -euo pipefail
+          source diff_meta.env
+
+          is_hotfix_context=0
+          REF_NAME="${GITHUB_HEAD_REF:-${GITHUB_REF_NAME:-}}"
+          if echo "${REF_NAME}" | grep -Eiq "(^|/)(hotfix|hf)(/|$|-)"; then
+            is_hotfix_context=1
+          fi
+
+          run_git_diff_u0() {
+            if [ "${DIFF_MODE}" = "pull_request" ]; then
+              # shellcheck disable=SC2086
+              git diff -U0 ${DIFF_RANGE} -- "$@"
+            else
+              if [ "${IS_ROOT}" = "1" ]; then
+                git diff -U0 --root "${AFTER_SHA}" -- "$@"
+              else
+                git diff -U0 "${BEFORE_SHA}" "${AFTER_SHA}" -- "$@"
+              fi
+            fi
+          }
+
+          run_git_diff_u0 \
+            ':(glob)modules/**' \
+            ':(glob)apps/**' \
+            ':(glob)services/**' \
+            ':(glob)src/**' \
+            > diff_patch.txt || true
+
+          if ! grep -E "^-.*\\b(traceId|workflowInstanceId|stepId)\\b" diff_patch.txt >/dev/null; then
+            echo "未检测到可追溯字段删除，跳过。"
+            exit 0
+          fi
+
+          added_adr=$(grep -E "^A[[:space:]]+docs/09-ADR-架构决策/ADR-[0-9]{8}-.*\.md$" changed_name_status.txt || true)
+          added_hotfix=$(grep -E "^A[[:space:]]+docs/09-ADR-架构决策/HOTFIX-[0-9]{8}-.*\.md$" changed_name_status.txt || true)
+
+          if [ -z "$added_adr" ]; then
+            if [ "$is_hotfix_context" -eq 1 ] && [ -n "$added_hotfix" ]; then
+              echo "检测到可追溯字段删除，但 hotfix 场景已新增 HOTFIX 记录，允许临时通过。"
+              exit 0
+            fi
+
+            echo "检测到删除可追溯关键字段（traceId/workflowInstanceId/stepId）。"
+            echo "禁止直接删除；如确需删除/替换，必须新增 ADR（hotfix 场景可先新增 HOTFIX）。"
+            echo "命中示例（最多展示 20 行）："
+            grep -E "^-.*\\b(traceId|workflowInstanceId|stepId)\\b" diff_patch.txt | head -n 20
+            exit 1
+          fi
+
+          echo "检测到可追溯字段删除，但已新增 ADR，允许通过（请在 ADR 中说明原因与替代方案）。"

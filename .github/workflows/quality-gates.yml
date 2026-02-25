@@ -1,0 +1,161 @@
+name: Quality Gates
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+    branches: ["**"]
+
+jobs:
+  quality-gates:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Java (Spring Boot)
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Compute changed files
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          EVENT_NAME="${{ github.event_name }}"
+          : > changed_files.txt
+
+          if [ "${EVENT_NAME}" = "pull_request" ]; then
+            BASE_REF="${{ github.base_ref }}"
+            if [ -z "${BASE_REF}" ]; then
+              echo "pull_request 事件但 base_ref 为空，无法计算 diff。" >&2
+              exit 1
+            fi
+            git fetch --no-tags --prune origin "${BASE_REF}:refs/remotes/origin/${BASE_REF}"
+            git diff --name-only "origin/${BASE_REF}...HEAD" > changed_files.txt
+          else
+            BEFORE_SHA="${{ github.event.before }}"
+            AFTER_SHA="${{ github.sha }}"
+            if [ "${BEFORE_SHA}" = "0000000000000000000000000000000000000000" ]; then
+              git diff --name-only --root "${AFTER_SHA}" > changed_files.txt
+            else
+              git diff --name-only "${BEFORE_SHA}" "${AFTER_SHA}" > changed_files.txt
+            fi
+          fi
+
+          echo "Changed files:"
+          cat changed_files.txt || true
+
+      - name: Require CODEOWNERS baseline for owner review
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          if [ ! -f ".github/CODEOWNERS" ] && [ ! -f "CODEOWNERS" ] && [ ! -f "docs/CODEOWNERS" ]; then
+            echo "缺少 CODEOWNERS。AGENTS.md 要求建立 Owner 机制（建议在 .github/CODEOWNERS 配置）。"
+            exit 1
+          fi
+
+      - name: Install dependencies (best effort for Node/Python)
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          if [ -f package.json ]; then
+            if [ -f package-lock.json ]; then
+              npm ci
+            else
+              npm install
+            fi
+          fi
+
+          if [ -f requirements.txt ]; then
+            python -m pip install --upgrade pip
+            pip install -r requirements.txt
+          fi
+
+          if [ -f requirements-dev.txt ]; then
+            python -m pip install --upgrade pip
+            pip install -r requirements-dev.txt
+          fi
+
+      - name: Secrets scan (gitleaks)
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Block debug print statements in production code paths
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          if [ ! -s changed_files.txt ]; then
+            echo "无文件变更，跳过。"
+            exit 0
+          fi
+
+          code_paths_regex='^(modules|apps|services|src)/'
+          code_file_regex='\.(java|kt|js|jsx|ts|tsx|py|go|rb|php|cs|scala)$'
+
+          : > debug_hits.txt
+          while IFS= read -r f; do
+            [ -f "$f" ] || continue
+            echo "$f" | grep -E "${code_paths_regex}" >/dev/null || continue
+            echo "$f" | grep -E "${code_file_regex}" >/dev/null || continue
+            echo "$f" | grep -E '(^|/)(test|tests|__tests__|spec|specs)/' >/dev/null && continue
+
+            grep -nE '\b(console\.log|print\(|System\.out\.println\()' "$f" >> debug_hits.txt || true
+          done < changed_files.txt
+
+          if [ -s debug_hits.txt ]; then
+            echo "检测到标准输出调试语句（禁止进入生产代码）："
+            cat debug_hits.txt
+            exit 1
+          fi
+
+          echo "未检测到标准输出调试语句。"
+
+      - name: Run project CI gate scripts when business code changed
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          if ! grep -E "^(modules|apps|services|src)/" changed_files.txt >/dev/null; then
+            echo "本次未触发业务代码目录变更，跳过 lint/test/build/typecheck/coverage 门禁脚本。"
+            exit 0
+          fi
+
+          required_scripts=(
+            "scripts/ci/lint.sh"
+            "scripts/ci/typecheck.sh"
+            "scripts/ci/test.sh"
+            "scripts/ci/build.sh"
+            "scripts/ci/coverage-check.sh"
+          )
+
+          for s in "${required_scripts[@]}"; do
+            if [ ! -x "$s" ]; then
+              echo "缺少可执行 CI 门禁脚本：$s"
+              echo "请按 AGENTS.md 12.5 配置并提交（脚本内落实 lint/typecheck/test/build/coverage>=80%）。"
+              exit 1
+            fi
+          done
+
+          scripts/ci/lint.sh
+          scripts/ci/typecheck.sh
+          scripts/ci/test.sh
+          scripts/ci/build.sh
+          scripts/ci/coverage-check.sh

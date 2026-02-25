@@ -1,0 +1,12 @@
+# HELIOS CODEOWNERS（个人项目版）
+# 注意：这里必须使用真实 GitHub 用户名/团队名。
+
+* @su-xiaoxiao
+
+docs/00-术语表/** @su-xiaoxiao
+docs/02-架构/** @su-xiaoxiao
+docs/08-安全/** @su-xiaoxiao
+docs/09-ADR-架构决策/** @su-xiaoxiao
+modules/** @su-xiaoxiao
+apps/** @su-xiaoxiao
+services/** @su-xiaoxiao
