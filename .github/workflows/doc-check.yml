@@ -155,12 +155,12 @@ jobs:
                 esac
 
                 case "$f" in
-                  */domain/*|*/workflow/*|*/state/*|*/decision/*|*/rule/*|*/rules/*|*/service/*)
+                  */domain/*|*/workflow/*|*/state/*|*/decision/*|*/rule/*|*/rules/*)
                     need_domain=1 ;;
                 esac
 
                 case "$f" in
-                  */trace/*|*/context/*|*/runtime/*|*/cache/*|*/window/*|*/replay/*)
+                  */trace/*|*/runtime/*|*/window/*|*/replay/*|*/observability/*|*/telemetry/*)
                     need_runtime=1 ;;
                 esac
 
@@ -196,7 +196,7 @@ jobs:
             exit 1
           fi
           if [ "$need_runtime" -eq 1 ] && [ -z "$touched_runtime_docs" ]; then
-            echo "检测到运行态（trace/context/cache/window/replay）相关变更，但未更新 docs/07-运行态/。"
+            echo "检测到运行态（trace/runtime/window/replay/observability/telemetry）相关变更，但未更新 docs/07-运行态/。"
             exit 1
           fi
           if [ "$need_security" -eq 1 ] && [ -z "$touched_security_docs" ]; then
@@ -209,16 +209,16 @@ jobs:
         run: |
           set -euo pipefail
 
-          misplaced_api=$(grep -E "^docs/04-接口/.*\.(ya?ml|json)$" changed_files.txt | grep -vE "^docs/04-接口/OpenAPI/" || true)
+          misplaced_api=$(grep -E "^docs/04-接口/.*\.(ya?ml|json)$" changed_files.txt | grep -vE "^docs/04-接口/(OpenAPI|Examples|示例)/" || true)
           if [ -n "$misplaced_api" ]; then
-            echo "检测到 docs/04-接口/ 下的 YAML/JSON 产物未放在 docs/04-接口/OpenAPI/："
+            echo "检测到 docs/04-接口/ 下的 YAML/JSON 文件未放在允许目录（OpenAPI/Examples/示例）："
             echo "$misplaced_api"
             exit 1
           fi
 
-          misplaced_event=$(grep -E "^docs/05-事件/.*\.(ya?ml|json|avsc|proto)$" changed_files.txt | grep -vE "^docs/05-事件/Schemas/" || true)
+          misplaced_event=$(grep -E "^docs/05-事件/.*\.(ya?ml|json|avsc|proto)$" changed_files.txt | grep -vE "^docs/05-事件/(Schemas|Examples|示例)/" || true)
           if [ -n "$misplaced_event" ]; then
-            echo "检测到 docs/05-事件/ 下的 Schema 产物未放在 docs/05-事件/Schemas/："
+            echo "检测到 docs/05-事件/ 下的 Schema/示例文件未放在允许目录（Schemas/Examples/示例）："
             echo "$misplaced_event"
             exit 1
           fi
@@ -236,15 +236,38 @@ jobs:
 
           adr_required=0
           security_adr_required=0
+          runtime_strategy_change=0
+          data_risk_change=0
+          infra_boundary_change=0
 
           if grep -E "^docs/02-架构/" changed_files.txt >/dev/null; then adr_required=1; fi
-          if grep -E "^docs/07-运行态/" changed_files.txt >/dev/null; then adr_required=1; fi
           if grep -E "^docs/08-安全/" changed_files.txt >/dev/null; then adr_required=1; security_adr_required=1; fi
           if grep -E "^docs/05-事件/版本与兼容策略\.md$" changed_files.txt >/dev/null; then adr_required=1; fi
           if grep -E "^docs/05-事件/Schemas/" changed_files.txt >/dev/null; then adr_required=1; fi
-          if grep -E "^docs/06-数据/" changed_files.txt >/dev/null; then adr_required=1; fi
-          if grep -E "^(modules|apps|services|src)/.*\.(yml|yaml|properties|json|toml|conf)$" changed_files.txt >/dev/null; then adr_required=1; fi
-          if grep -E "^(modules|apps|services|src)/.*/(pom\.xml|build\.gradle(\.kts)?|package\.json|pyproject\.toml|requirements(-dev)?\.txt)$" changed_files.txt >/dev/null; then adr_required=1; fi
+
+          # docs/07 与 docs/06 不做“一改就 ADR”，仅在明显命中运行态策略/迁移兼容风险语义时触发。
+          if grep -E "^docs/07-运行态/.*(窗口|window|回放|replay|保留|retention|归档|archive|容量|capacity|性能|performance)" changed_files.txt >/dev/null; then
+            runtime_strategy_change=1
+            adr_required=1
+          fi
+          if grep -E "^docs/06-数据/.*(迁移|migration|索引|index|保留|retention|归档|archive|兼容|breaking|回滚|rollback|补偿)" changed_files.txt >/dev/null; then
+            data_risk_change=1
+            adr_required=1
+          fi
+
+          # 仅基础设施/部署类清单变更触发 ADR；普通业务配置与常规依赖升级不直接触发 ADR（仍需 docs 更新）。
+          if grep -E "^(infra|infrastructure|deploy|deployment|ops|helm|charts|k8s|kubernetes|terraform)/" changed_files.txt >/dev/null; then
+            infra_boundary_change=1
+            adr_required=1
+          fi
+          if grep -E "^(Dockerfile|docker-compose(\.ya?ml)?|compose\.ya?ml)$" changed_files.txt >/dev/null; then
+            infra_boundary_change=1
+            adr_required=1
+          fi
+          if grep -E "^(infra|infrastructure|deploy|deployment|ops|helm|charts|k8s|kubernetes|terraform)/.*(ya?ml|json|tf|tfvars|hcl|conf|toml)$" changed_files.txt >/dev/null; then
+            infra_boundary_change=1
+            adr_required=1
+          fi
 
           added_adr=$(grep -E "^A[[:space:]]+docs/09-ADR-架构决策/ADR-[0-9]{8}-.*\.md$" changed_name_status.txt || true)
           added_hotfix=$(grep -E "^A[[:space:]]+docs/09-ADR-架构决策/HOTFIX-[0-9]{8}-.*\.md$" changed_name_status.txt || true)
@@ -259,7 +282,7 @@ jobs:
             if [ "$is_hotfix_context" -eq 1 ] && [ -n "$added_hotfix" ]; then
               echo "hotfix 场景下检测到关键变更，已新增 HOTFIX 记录，允许临时通过。"
             else
-              echo "检测到关键变更（架构/运行态/兼容策略/事件Schema/数据/关键配置），但未新增 ADR。"
+              echo "检测到需 ADR 的关键变更（架构/安全/事件兼容与Schema/运行态策略/数据迁移兼容风险/基础设施边界），但未新增 ADR。"
               echo "常规场景必须新增：docs/09-ADR-架构决策/ADR-YYYYMMDD-简短标题.md"
               echo "仅 hotfix 分支场景可使用 HOTFIX-YYYYMMDD-简短标题.md 作为临时记录。"
               exit 1
