@@ -3,10 +3,10 @@ set -euo pipefail
 source "$(dirname "$0")/_lib.sh"
 
 THRESHOLD="${COVERAGE_THRESHOLD:-80}"
-log "coverage gate start (threshold=${THRESHOLD}%)"
+ci_begin "覆盖率门禁（阈值 ${THRESHOLD}%）"
 
 if ! has_any_code_dir; then
-  log "no business code stack detected, skip coverage check"
+  log "未检测到业务代码栈，跳过覆盖率检查"
   exit 0
 fi
 
@@ -18,7 +18,7 @@ with open('coverage/coverage-summary.json', encoding='utf-8') as f:
 print(data.get('total', {}).get('lines', {}).get('pct', 0))
 PY
 )
-  log "line coverage=${pct}%"
+  log "行覆盖率=${pct}%（来源：coverage/coverage-summary.json）"
   python3 - <<PY
 pct=float('${pct}')
 threshold=float('${THRESHOLD}')
@@ -38,7 +38,7 @@ else:
     print(float(rate)*100)
 PY
 )
-  log "line coverage=${pct}%"
+  log "行覆盖率=${pct}%（来源：coverage.xml）"
   python3 - <<PY
 pct=float('${pct}')
 threshold=float('${THRESHOLD}')
@@ -63,7 +63,7 @@ else:
     print(0)
 PY
 )
-  log "line coverage=${pct}% (${jacoco_xml})"
+  log "行覆盖率=${pct}%（来源：${jacoco_xml}）"
   python3 - <<PY
 pct=float('${pct}')
 threshold=float('${THRESHOLD}')

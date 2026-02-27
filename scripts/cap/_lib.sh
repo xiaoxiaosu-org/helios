@@ -1,6 +1,18 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+cap_now() {
+  date -u +"%Y-%m-%dT%H:%M:%SZ"
+}
+
+cap_log() {
+  local prefix="[cap]"
+  if [ "${CAP_ID:-}" != "" ]; then
+    prefix="[cap][${CAP_ID}]"
+  fi
+  echo "${prefix}[$(cap_now)] $*"
+}
+
 cap_now_utc() {
   date -u +"%Y%m%dT%H%M%SZ"
 }
@@ -57,4 +69,3 @@ cap_status_from_exit_code() {
     *) echo "error" ;;
   esac
 }
-

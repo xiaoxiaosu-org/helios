@@ -2,59 +2,51 @@
 set -euo pipefail
 source "$(dirname "$0")/_lib.sh"
 
-log "test gate start"
+ci_begin "测试门禁"
 
 if has_file package.json && command -v npm >/dev/null 2>&1; then
   if has_npm_script test:ci; then
-    log "running npm run test:ci"
-    npm run test:ci
+    ci_run npm run test:ci
     exit 0
   fi
   if has_npm_script test:coverage; then
-    log "running npm run test:coverage"
-    npm run test:coverage
+    ci_run npm run test:coverage
     exit 0
   fi
   if has_npm_script test; then
-    log "running npm test"
-    npm test
+    ci_run npm test
     exit 0
   fi
 fi
 
 if has_file pyproject.toml || has_file requirements.txt; then
   if command -v pytest >/dev/null 2>&1; then
-    log "running pytest"
-    pytest
+    ci_run pytest
     exit 0
   fi
 fi
 
 if has_file pom.xml && [ -x ./mvnw ]; then
   if grep -qi "jacoco" pom.xml 2>/dev/null; then
-    log "running ./mvnw -B test jacoco:report"
-    ./mvnw -B test jacoco:report
+    ci_run ./mvnw -B test jacoco:report
   else
-    log "running ./mvnw -B test"
-    ./mvnw -B test
+    ci_run ./mvnw -B test
   fi
   exit 0
 fi
 
 if (has_file build.gradle || has_file build.gradle.kts) && [ -x ./gradlew ]; then
   if grep -qi "jacoco" build.gradle build.gradle.kts 2>/dev/null; then
-    log "running ./gradlew test jacocoTestReport"
-    ./gradlew test jacocoTestReport
+    ci_run ./gradlew test jacocoTestReport
   else
-    log "running ./gradlew test"
-    ./gradlew test
+    ci_run ./gradlew test
   fi
   exit 0
 fi
 
 if has_any_code_dir; then
-  log "no test command detected; customize scripts/ci/test.sh for this repository"
+  log "检测到业务代码目录，但未识别可用的测试命令。请完善 scripts/ci/test.sh"
   exit 1
 fi
 
-log "no business code stack detected, skip test"
+log "未检测到业务代码栈，跳过测试"

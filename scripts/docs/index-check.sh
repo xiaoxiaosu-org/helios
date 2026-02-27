@@ -1,10 +1,22 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+now() {
+  date -u +"%Y-%m-%dT%H:%M:%SZ"
+}
+
+log() {
+  echo "[docs-index][$(now)] $*"
+}
+
 fail() {
-  echo "[docs-index] $*" >&2
+  echo "[docs-index][$(now)] $*" >&2
   exit 1
 }
+
+start_s="$(date +%s)"
+trap 'rc=$?; end_s=$(date +%s); dur=$(( end_s - start_s )); if [ "$rc" -eq 0 ]; then log "结束：成功（耗时 ${dur}s）"; else log "结束：失败（退出码 ${rc}，耗时 ${dur}s）"; fi' EXIT
+log "启动：docs 索引完整性校验"
 
 root="$(cd "$(dirname "$0")/../.." && pwd)"
 cd "$root"
@@ -69,5 +81,4 @@ while IFS= read -r dir; do
   fi
 done < <(find docs -type d -print)
 
-echo "[docs-index] ok"
-
+log "校验通过"

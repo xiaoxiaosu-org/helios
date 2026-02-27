@@ -1,8 +1,12 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+start_s="$(date +%s)"
+trap 'rc=$?; end_s=$(date +%s); dur=$(( end_s - start_s )); if [ "$rc" -eq 0 ]; then echo "[CAP-003] 结束：成功（耗时 ${dur}s）"; else echo "[CAP-003] 结束：失败/阻塞（退出码 ${rc}，耗时 ${dur}s）"; fi' EXIT
+echo "[CAP-003] 启动：可观测闭环验收"
+
 if [ ! -x scripts/obs/smoke-trace.sh ] || [ ! -x scripts/obs/query-trace.sh ]; then
-  echo "[CAP-003] missing executables: scripts/obs/smoke-trace.sh and/or scripts/obs/query-trace.sh" >&2
+  echo "[CAP-003] 缺少或不可执行：scripts/obs/smoke-trace.sh 或 scripts/obs/query-trace.sh" >&2
   exit 2
 fi
 
@@ -14,4 +18,3 @@ test -n "${trace_id}" || exit 1
 
 scripts/obs/query-trace.sh "${trace_id}" --out "${ARTIFACT_DIR}"
 test -f "${ARTIFACT_DIR}/trace.json" || test -f "${ARTIFACT_DIR}/trace.txt" || exit 1
-

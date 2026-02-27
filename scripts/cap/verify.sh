@@ -6,7 +6,7 @@ root="$(cd "${here}/../.." && pwd)"
 cd "${root}"
 
 usage() {
-  echo "Usage: scripts/cap/verify.sh CAP-001" >&2
+  echo "用法：scripts/cap/verify.sh CAP-001" >&2
   exit 3
 }
 
@@ -14,7 +14,7 @@ usage() {
 cap_id="$1"
 
 if ! echo "${cap_id}" | grep -Eq '^CAP-[0-9]{3}$'; then
-  echo "[cap] invalid cap id: ${cap_id}" >&2
+  echo "[cap] CAP ID 不合法：${cap_id}" >&2
   exit 3
 fi
 
@@ -22,20 +22,21 @@ source "${here}/_lib.sh"
 
 run_dir="$(cap_mkdir_run_dir "${cap_id}")"
 export ARTIFACT_DIR="${run_dir}"
+export CAP_ID="${cap_id}"
 
 cap_script="${here}/${cap_id}/verify.sh"
 cmd_str="scripts/cap/verify.sh ${cap_id}"
 
 {
-  echo "[cap] capId=${cap_id}"
-  echo "[cap] artifactDir=${run_dir}"
-  echo "[cap] script=${cap_script}"
+  cap_log "启动：CAP 验收"
+  cap_log "产物目录：${run_dir}"
+  cap_log "验收脚本：${cap_script}"
 } | tee "${run_dir}/run.log" >/dev/null
 
 exit_code=0
 
 if [ ! -x "${cap_script}" ]; then
-  echo "[cap] blocked: missing or non-executable ${cap_script}" | tee -a "${run_dir}/run.log" >/dev/null
+  cap_log "阻塞：缺少或不可执行 ${cap_script}" | tee -a "${run_dir}/run.log" >/dev/null
   exit_code=2
 else
   # Run CAP-specific checks; it is responsible for writing any additional artifacts under $ARTIFACT_DIR.
@@ -48,5 +49,10 @@ fi
 status="$(cap_status_from_exit_code "${exit_code}")"
 cap_write_meta "${run_dir}" "${cap_id}" "${cmd_str}" "${exit_code}" "${status}"
 
-exit "${exit_code}"
+if [ "${exit_code}" -eq 0 ]; then
+  cap_log "结束：成功（返回码 ${exit_code}）" | tee -a "${run_dir}/run.log" >/dev/null
+else
+  cap_log "结束：失败/阻塞（返回码 ${exit_code}）" | tee -a "${run_dir}/run.log" >/dev/null
+fi
 
+exit "${exit_code}"
