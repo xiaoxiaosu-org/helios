@@ -8,6 +8,7 @@
 
 - 想理解项目整体：先读 `docs/00-术语表/README.md` → `docs/01-产品/README.md` → `docs/02-架构/README.md` → `docs/03-领域模型/README.md`
 - 想了解工程智能化演进：读 `docs/02-架构/执行计划/README.md` → `docs/02-架构/质量评分与演进.md` → `docs/02-架构/技术债清单.md`
+- 想复用本项目的工程化闭环到新项目：读 `docs/02-架构/工程治理/经验库/README.md` → `docs/02-架构/工程治理/经验库/vibecoding-工程化闭环最佳实践.md`
 - 想新增/修改 API：读 `docs/04-接口/README.md`（并确保 OpenAPI 产物落在 `docs/04-接口/OpenAPI/`）
 - 想新增/修改事件：读 `docs/05-事件/README.md`（并确保 Schema 产物落在 `docs/05-事件/Schemas/`）
 - 想新增/修改数据结构：读 `docs/06-数据/README.md`（迁移步骤、校验方式、回滚/补偿必写）
