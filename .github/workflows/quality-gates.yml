@@ -139,6 +139,20 @@ jobs:
 
           echo "未检测到标准输出调试语句。"
 
+      - name: Enforce architecture dependency direction (CAP-004)
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          if [ ! -x "scripts/ci/arch-check.sh" ]; then
+            echo "缺少可执行脚本：scripts/ci/arch-check.sh"
+            echo "下一步：补齐 CAP-004 门禁脚本并赋权：chmod +x scripts/ci/arch-check.sh"
+            exit 1
+          fi
+
+          mkdir -p artifacts/ci/arch-check
+          scripts/ci/arch-check.sh --out artifacts/ci/arch-check
+
       - name: Run project CI gate scripts when business code changed
         shell: bash
         run: |
