@@ -44,7 +44,7 @@ fi
 
 git config core.hooksPath "${hooks_path}"
 
-template_rel=".github/commit_message_template.txt"
+template_rel=".github/commit_message_template.md"
 template_abs="${root}/${template_rel}"
 if [ -f "${template_abs}" ]; then
   git config commit.template "${template_abs}"
