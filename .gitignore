@@ -22,3 +22,6 @@
 # virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
 hs_err_pid*
 replay_pid*
+
+# Verification artifacts (see docs/07-运行态/产物与证据目录规范.md)
+artifacts/
