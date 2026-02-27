@@ -68,6 +68,7 @@ jobs:
 
           if [ ! -f ".github/CODEOWNERS" ] && [ ! -f "CODEOWNERS" ] && [ ! -f "docs/CODEOWNERS" ]; then
             echo "缺少 CODEOWNERS。AGENTS.md 要求建立 Owner 机制（建议在 .github/CODEOWNERS 配置）。"
+            echo "下一步：新增 .github/CODEOWNERS（或仓库根 CODEOWNERS）并提交。"
             exit 1
           fi
 
@@ -160,6 +161,7 @@ jobs:
             if [ ! -x "$s" ]; then
               echo "缺少可执行 CI 门禁脚本：$s"
               echo "请按 AGENTS.md 12.5 配置并提交（脚本内落实 lint/typecheck/test/build/coverage>=80%）。"
+              echo "下一步：补齐并赋予可执行权限：chmod +x scripts/ci/lint.sh scripts/ci/typecheck.sh scripts/ci/test.sh scripts/ci/build.sh scripts/ci/coverage-check.sh"
               exit 1
             fi
           done

@@ -233,6 +233,7 @@ jobs:
 
           if [ ! -f "${template}" ]; then
             echo "缺少 PR 模板（.github/pull_request_template.md 或 .github/PULL_REQUEST_TEMPLATE.md）。"
+            echo "下一步：补充 .github/pull_request_template.md 或 .github/PULL_REQUEST_TEMPLATE.md。"
             exit 1
           fi
 
@@ -241,6 +242,7 @@ jobs:
 
           if ! grep -q '[^[:space:]]' "${pr_body_file}"; then
             echo "PR 描述不能为空，必须按模板填写。"
+            echo "下一步：按 .github/pull_request_template.md 完整填写 PR 描述后重试。"
             exit 1
           fi
 
@@ -261,6 +263,7 @@ jobs:
           for section in "${required_sections[@]}"; do
             if ! grep -F "${section}" "${pr_body_file}" >/dev/null; then
               echo "PR 描述缺少模板段落：${section}"
+              echo "下一步：补齐缺失段落后重试；模板见 .github/pull_request_template.md。"
               exit 1
             fi
           done
@@ -286,6 +289,7 @@ jobs:
             block="$(extract_section "${section_title}" | filter_meaningful_lines)"
             if [ -z "${block}" ]; then
               echo "PR 模板中的“${section_title}”不能为空。"
+              echo "下一步：根据 .github/pull_request_template.md 填写该段落的实际内容。"
               exit 1
             fi
           }
@@ -300,11 +304,13 @@ jobs:
           mapping_block="$(extract_section "## 功能与文件映射（Feature-File Mapping）" | grep -vE '^[[:space:]]*(<!--.*-->)?[[:space:]]*$' || true)"
           if ! echo "${mapping_block}" | grep -Eq '^[[:space:]]*-[[:space:]]*[^:]+:[[:space:]]*.+$'; then
             echo "PR 模板中的“功能与文件映射”格式错误，要求：- 功能: 文件列表"
+            echo "下一步：改为“- 功能: 文件A, 文件B”格式；参考 .github/pull_request_template.md。"
             exit 1
           fi
 
           if ! grep -Eq '^[[:space:]]*-[[:space:]]\[[xX]\][[:space:]](Feature|Bugfix|Refactor|Docs|Chore)[[:space:]]*$' "${pr_body_file}"; then
             echo "PR 模板中的“变更类型（Type）”至少需要勾选一项。"
+            echo "下一步：至少勾选 1 个变更类型复选框（Feature/Bugfix/Refactor/Docs/Chore）。"
             exit 1
           fi
 
