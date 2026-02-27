@@ -39,13 +39,15 @@ jobs:
           : > changed_files.txt
 
           if [ "${EVENT_NAME}" = "pull_request" ]; then
-            BASE_REF="${{ github.base_ref }}"
-            if [ -z "${BASE_REF}" ]; then
-              echo "pull_request 事件但 base_ref 为空，无法计算 diff。" >&2
+            BASE_SHA="${{ github.event.pull_request.base.sha }}"
+            HEAD_SHA="${{ github.event.pull_request.head.sha }}"
+
+            if [ -z "${BASE_SHA}" ] || [ -z "${HEAD_SHA}" ]; then
+              echo "pull_request 事件但 base/head sha 为空，无法计算 diff。" >&2
               exit 1
             fi
-            git fetch --no-tags --prune origin "${BASE_REF}:refs/remotes/origin/${BASE_REF}"
-            git diff --name-only "origin/${BASE_REF}...HEAD" > changed_files.txt
+
+            git diff --name-only "${BASE_SHA}...${HEAD_SHA}" > changed_files.txt
           else
             BEFORE_SHA="${{ github.event.before }}"
             AFTER_SHA="${{ github.sha }}"
