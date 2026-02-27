@@ -1,0 +1,46 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+log() {
+  echo "[pre-push] $*"
+}
+
+root="$(git rev-parse --show-toplevel 2>/dev/null || true)"
+if [ -z "${root}" ]; then
+  log "未检测到 git 仓库根目录，跳过。"
+  exit 0
+fi
+
+cd "${root}"
+
+if [ -x scripts/docs/index-check.sh ]; then
+  log "运行：scripts/docs/index-check.sh"
+  scripts/docs/index-check.sh
+else
+  log "缺少 scripts/docs/index-check.sh（或不可执行），跳过。"
+fi
+
+if [ -x scripts/ci/verify.sh ]; then
+  log "运行：scripts/ci/verify.sh"
+  scripts/ci/verify.sh
+else
+  log "缺少 scripts/ci/verify.sh（或不可执行），跳过。"
+fi
+
+branch="$(git symbolic-ref --quiet --short HEAD 2>/dev/null || true)"
+if [ -n "${branch}" ]; then
+  if echo "${branch}" | grep -Eq 'CAP-[0-9]{3}'; then
+    cap_id="$(echo "${branch}" | grep -Eo 'CAP-[0-9]{3}' | head -n1)"
+    if [ -x "scripts/cap/verify.sh" ]; then
+      log "检测到分支包含 ${cap_id}，运行：scripts/cap/verify.sh ${cap_id}"
+      scripts/cap/verify.sh "${cap_id}"
+    else
+      log "缺少 scripts/cap/verify.sh（或不可执行），跳过 CAP 验收。"
+    fi
+  else
+    log "分支不包含 CAP-00X，跳过 CAP 验收：${branch}"
+  fi
+else
+  log "未检测到当前分支（可能是 detached HEAD），跳过 CAP 验收。"
+fi
+
