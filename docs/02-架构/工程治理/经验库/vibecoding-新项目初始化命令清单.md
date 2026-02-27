@@ -1,9 +1,9 @@
 # vibecoding 新项目初始化命令清单（含 Git 配置）
 
-> 版本：v1.1
+> 版本：v1.2
 > 最近更新：2026-02-27
 > 适用范围：新项目 0->1 工程化启动（语言无关最小闭环）
-> 对应实现：`.githooks/*`、`scripts/ci/*`、`scripts/docs/index-check.sh`、`.github/workflows/*`
+> 对应实现：`scripts/dev/bootstrap-governance-baseline.sh`、`.githooks/*`、`scripts/ci/*`、`scripts/docs/index-check.sh`、`.github/workflows/*`
 
 ## 0. 目标
 
@@ -33,9 +33,36 @@ git config --global rebase.autoStash true
 
 ---
 
-## 2. T+0 初始化命令（可直接复制）
+## 2. 推荐：一键脚本初始化
 
-以下命令在新项目根目录执行。
+优先使用脚本（可重复执行、支持 `--dry-run`、`--force`）：
+
+```bash
+# 在目标项目目录执行（或从模板仓库调用并指定 --target）
+scripts/dev/bootstrap-governance-baseline.sh --target .
+
+# 仅预演，不落盘
+scripts/dev/bootstrap-governance-baseline.sh --target . --dry-run
+
+# 已有文件需要覆盖时
+scripts/dev/bootstrap-governance-baseline.sh --target . --force
+```
+
+可选：首次机器配置可由脚本一并写入全局 Git：
+
+```bash
+scripts/dev/bootstrap-governance-baseline.sh \
+  --target . \
+  --setup-global-git \
+  --git-user-name "你的名字" \
+  --git-user-email "你的邮箱"
+```
+
+---
+
+## 3. 手工初始化（脚本等价）
+
+以下命令在新项目根目录执行（当你不方便直接使用脚本时）：
 
 ```bash
 # 1) 基础目录
@@ -124,7 +151,7 @@ EOF
 
 ---
 
-## 3. Git 与 Hook 本仓库级配置（必须）
+## 4. Git 与 Hook 本仓库级配置（必须）
 
 ```bash
 # 1) 本地 hooks + commit template 指向项目文件
@@ -176,7 +203,7 @@ chmod +x .githooks/pre-commit .githooks/commit-msg .githooks/pre-push
 
 ---
 
-## 4. CI 门禁最小模板（必须）
+## 5. CI 门禁最小模板（必须）
 
 ```bash
 # 质量门禁聚合入口
@@ -244,7 +271,7 @@ EOF
 
 ---
 
-## 5. 第一次提交前检查
+## 6. 第一次提交前检查
 
 ```bash
 ./scripts/dev/install-git-hooks.sh
@@ -263,7 +290,7 @@ git commit -m "chore(init): 初始化工程闭环基线"
 
 ---
 
-## 6. GitHub 远端保护配置（仓库设置）
+## 7. GitHub 远端保护配置（仓库设置）
 
 对 `main` 分支至少开启：
 
@@ -276,7 +303,7 @@ git commit -m "chore(init): 初始化工程闭环基线"
 
 ---
 
-## 7. 新项目接入 AI 编程工具时的开场指令（建议）
+## 8. 新项目接入 AI 编程工具时的开场指令（建议）
 
 在项目根目录首条指令固定为：
 
@@ -289,7 +316,7 @@ git commit -m "chore(init): 初始化工程闭环基线"
 
 ---
 
-## 8. 交给大模型的最小文件包（建议）
+## 9. 交给大模型的最小文件包（建议）
 
 至少提供以下文件给大模型作为启动上下文：
 
