@@ -443,6 +443,7 @@ jobs:
           scripts/docs/git-governance-sync-check.sh
 
       - name: Enforce governance checklist update for git gate changes
+        if: github.event_name == 'pull_request'
         shell: bash
         run: |
           set -euo pipefail
