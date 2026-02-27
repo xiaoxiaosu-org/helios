@@ -48,6 +48,7 @@ guidance_patterns=(
   ".github/workflows/doc-check.yml::下一步：补齐缺失段落后重试；模板见 .github/pull_request_template.md。"
   ".github/workflows/doc-check.yml::下一步：至少勾选 1 个变更类型复选框"
   ".github/workflows/doc-check.yml::下一步：同步更新 docs/02-架构/工程治理/Git门禁与模板对照清单.md"
+  ".github/workflows/doc-check.yml::下一步：更新 docs/02-架构/工程治理/经验库/"
   ".github/workflows/quality-gates.yml::下一步：新增 .github/CODEOWNERS（或仓库根 CODEOWNERS）并提交。"
   ".github/workflows/quality-gates.yml::下一步：补齐并赋予可执行权限"
 )

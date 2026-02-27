@@ -49,6 +49,7 @@
 | PR 模板完整性与非空校验 | `doc-check.yml` | 本文件 + `工程治理与门禁.md` | CI 强制 |
 | PR 阶段打印结构化明细 | `doc-check.yml` | 本文件 + `工程治理与门禁.md` | CI 日志输出 |
 | Git 门禁相关实现变更必须同步更新对照清单 | `doc-check.yml` | 本文件 + `分支与门禁落地.md` + `工程治理与门禁.md` | CI 强制（缺少清单更新直接失败） |
+| 高风险 Git 门禁变更需经验库更新（支持豁免） | `doc-check.yml` | 本文件 + `工程治理与门禁.md` + `经验文档更新规则.md` | 高风险硬失败；低风险仅告警 |
 | CAP 验收成功后提醒提交/PR 闭环 | `scripts/cap/verify.sh` + 协作流程约束 | 本文件 + `AGENTS.md` + `工程治理与门禁.md` + `分支与门禁落地.md` | 验收日志输出 + 会话规则 |
 | 会话可见提交明细输出 | 协作流程约束 | 本文件 + `AGENTS.md` + `工程治理与门禁.md` + `分支与门禁落地.md` | `scripts/docs/git-governance-sync-check.sh` 校验规则存在 |
 | 会话可见推送明细输出 | 协作流程约束 | 本文件 + `AGENTS.md` + `工程治理与门禁.md` + `分支与门禁落地.md` | `scripts/docs/git-governance-sync-check.sh` 校验规则存在 |
@@ -76,6 +77,7 @@
 - 文档职责分离（本文件承载细项、`分支与门禁落地.md` 只承载流程）
 - 会话可见输出规则（`commit/push/PR` 三阶段）
 - Git 门禁相关实现变更 -> 必须同步更新对照清单（CI 阻断）
+- 高风险 Git 门禁变更 -> 必须更新经验库或在 PR 提供豁免（日期口径 T+1 日）
 - CAP 验收成功 -> 必须推进提交/PR 闭环
 
 接入点：
@@ -117,6 +119,13 @@ CI 触发范围（`doc-check` 会直接阻断）：
 - `AGENTS.md`
 - `docs/02-架构/工程治理/工程治理与门禁.md`
 - `docs/02-架构/工程治理/分支与门禁落地.md`
+
+经验库分级门禁（避免过严）：
+- 高风险文件变更（会硬失败）：`.githooks/*`、`doc-check.yml`、`quality-gates.yml`、提交/PR 模板、`scripts/dev/install-git-hooks.sh`、`scripts/docs/git-governance-sync-check.sh`
+- 高风险命中后必须满足二选一：
+  - 更新 `docs/02-架构/工程治理/经验库/` 任一文档；或
+  - 在 PR 填写 `经验库豁免说明` + `补齐截止日期（YYYY-MM-DD，<=T+1日）`
+- 低风险治理文档改动（如 `AGENTS.md`、治理文档）未更新经验库时仅告警，不阻断
 
 推荐顺序：
 1) 先改模板（输入结构）
