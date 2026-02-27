@@ -51,6 +51,8 @@ cap_write_meta "${run_dir}" "${cap_id}" "${cmd_str}" "${exit_code}" "${status}"
 
 if [ "${exit_code}" -eq 0 ]; then
   cap_log "结束：成功（返回码 ${exit_code}）" | tee -a "${run_dir}/run.log" >/dev/null
+  cap_log "下一步：${cap_id} 已通过，建议立即进入提交与 PR 闭环（禁止在 main 直接提交）。" | tee -a "${run_dir}/run.log" >/dev/null
+  cap_log "下一步：在会话输出结构化提交明细后提交；PR 描述中引用证据目录：${run_dir}" | tee -a "${run_dir}/run.log" >/dev/null
 else
   cap_log "结束：失败/阻塞（返回码 ${exit_code}）" | tee -a "${run_dir}/run.log" >/dev/null
 fi

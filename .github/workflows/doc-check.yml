@@ -17,6 +17,9 @@ jobs:
         run: |
           set -euo pipefail
 
+          # Keep changed file paths in UTF-8 to avoid escaped octal output on CJK paths.
+          git config core.quotepath false
+
           EVENT_NAME="${{ github.event_name }}"
 
           : > changed_files.txt
@@ -233,6 +236,7 @@ jobs:
 
           if [ ! -f "${template}" ]; then
             echo "缺少 PR 模板（.github/pull_request_template.md 或 .github/PULL_REQUEST_TEMPLATE.md）。"
+            echo "下一步：补充 .github/pull_request_template.md 或 .github/PULL_REQUEST_TEMPLATE.md。"
             exit 1
           fi
 
@@ -241,6 +245,7 @@ jobs:
 
           if ! grep -q '[^[:space:]]' "${pr_body_file}"; then
             echo "PR 描述不能为空，必须按模板填写。"
+            echo "下一步：按 .github/pull_request_template.md 完整填写 PR 描述后重试。"
             exit 1
           fi
 
@@ -261,6 +266,7 @@ jobs:
           for section in "${required_sections[@]}"; do
             if ! grep -F "${section}" "${pr_body_file}" >/dev/null; then
               echo "PR 描述缺少模板段落：${section}"
+              echo "下一步：补齐缺失段落后重试；模板见 .github/pull_request_template.md。"
               exit 1
             fi
           done
@@ -286,6 +292,7 @@ jobs:
             block="$(extract_section "${section_title}" | filter_meaningful_lines)"
             if [ -z "${block}" ]; then
               echo "PR 模板中的“${section_title}”不能为空。"
+              echo "下一步：根据 .github/pull_request_template.md 填写该段落的实际内容。"
               exit 1
             fi
           }
@@ -300,11 +307,13 @@ jobs:
           mapping_block="$(extract_section "## 功能与文件映射（Feature-File Mapping）" | grep -vE '^[[:space:]]*(<!--.*-->)?[[:space:]]*$' || true)"
           if ! echo "${mapping_block}" | grep -Eq '^[[:space:]]*-[[:space:]]*[^:]+:[[:space:]]*.+$'; then
             echo "PR 模板中的“功能与文件映射”格式错误，要求：- 功能: 文件列表"
+            echo "下一步：改为“- 功能: 文件A, 文件B”格式；参考 .github/pull_request_template.md。"
             exit 1
           fi
 
           if ! grep -Eq '^[[:space:]]*-[[:space:]]\[[xX]\][[:space:]](Feature|Bugfix|Refactor|Docs|Chore)[[:space:]]*$' "${pr_body_file}"; then
             echo "PR 模板中的“变更类型（Type）”至少需要勾选一项。"
+            echo "下一步：至少勾选 1 个变更类型复选框（Feature/Bugfix/Refactor/Docs/Chore）。"
             exit 1
           fi
 
@@ -432,6 +441,132 @@ jobs:
           fi
 
           scripts/docs/git-governance-sync-check.sh
+
+      - name: Enforce governance checklist update for git gate changes
+        if: github.event_name == 'pull_request'
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          gate_changed=0
+          while IFS= read -r f; do
+            case "${f}" in
+              .githooks/*|\
+              .github/workflows/doc-check.yml|\
+              .github/workflows/quality-gates.yml|\
+              .github/commit_message_template.md|\
+              .github/pull_request_template.md|\
+              .github/PULL_REQUEST_TEMPLATE.md|\
+              scripts/dev/install-git-hooks.sh|\
+              scripts/docs/git-governance-sync-check.sh|\
+              AGENTS.md|\
+              docs/02-架构/工程治理/工程治理与门禁.md|\
+              docs/02-架构/工程治理/分支与门禁落地.md)
+                gate_changed=1
+                break
+                ;;
+            esac
+          done < changed_files.txt
+
+          if [ "${gate_changed}" -eq 0 ]; then
+            echo "未检测到 Git 门禁相关实现/规则文件变更，跳过。"
+            exit 0
+          fi
+
+          if ! grep -Fx "docs/02-架构/工程治理/Git门禁与模板对照清单.md" changed_files.txt >/dev/null; then
+            echo "检测到 Git 门禁相关实现/规则文件变更，但未更新唯一信息源文档。"
+            echo "下一步：同步更新 docs/02-架构/工程治理/Git门禁与模板对照清单.md（实现位置/文档位置/自动约束）。"
+            exit 1
+          fi
+
+      - name: Enforce experience docs update for high-risk git governance changes
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          event_name="${{ github.event_name }}"
+          high_risk_changed=0
+          low_risk_only=0
+          touched_experience=0
+
+          while IFS= read -r f; do
+            case "${f}" in
+              docs/02-架构/工程治理/经验库/*)
+                touched_experience=1
+                ;;
+            esac
+            case "${f}" in
+              .githooks/*|\
+              .github/workflows/doc-check.yml|\
+              .github/workflows/quality-gates.yml|\
+              .github/commit_message_template.md|\
+              .github/pull_request_template.md|\
+              .github/PULL_REQUEST_TEMPLATE.md|\
+              scripts/dev/install-git-hooks.sh|\
+              scripts/docs/git-governance-sync-check.sh)
+                high_risk_changed=1
+                ;;
+              AGENTS.md|\
+              docs/02-架构/工程治理/*)
+                low_risk_only=1
+                ;;
+            esac
+          done < changed_files.txt
+
+          if [ "${high_risk_changed}" -eq 0 ]; then
+            if [ "${low_risk_only}" -eq 1 ] && [ "${touched_experience}" -eq 0 ]; then
+              echo "warning: 检测到治理规则文档变更但未更新经验库（低风险场景不阻断）。"
+              echo "建议：24 小时内补充 docs/02-架构/工程治理/经验库/ 对应经验文档。"
+            else
+              echo "未检测到高风险 Git 门禁变更，跳过经验库硬门禁。"
+            fi
+            exit 0
+          fi
+
+          if [ "${touched_experience}" -eq 1 ]; then
+            echo "检测到高风险 Git 门禁变更，且已更新经验库文档，校验通过。"
+            exit 0
+          fi
+
+          if [ "${event_name}" != "pull_request" ]; then
+            echo "warning: push 事件检测到高风险 Git 门禁变更但未更新经验库。"
+            echo "建议：在 PR 中补充经验库更新，或填写经验库豁免说明与补齐截止日期（<=24h）。"
+            exit 0
+          fi
+
+          pr_body_file="pr_body.md"
+          printf '%s\n' "${{ github.event.pull_request.body }}" > "${pr_body_file}"
+
+          exemption_reason="$(awk -F'经验库豁免说明：[[:space:]]*' '/经验库豁免说明：/ {print $2}' "${pr_body_file}" | tail -n 1 | tr -d '\r')"
+          exemption_due="$(awk -F'补齐截止日期（[^）]*）：[[:space:]]*' '/补齐截止日期（/ {print $2}' "${pr_body_file}" | tail -n 1 | tr -d '\r')"
+
+          if [ -z "${exemption_reason}" ] || [ -z "${exemption_due}" ]; then
+            echo "检测到高风险 Git 门禁变更，但未更新经验库文档。"
+            echo "下一步：更新 docs/02-架构/工程治理/经验库/；或在 PR 填写“经验库豁免说明/补齐截止日期（YYYY-MM-DD，<=T+1日）”。"
+            exit 1
+          fi
+
+          if ! echo "${exemption_due}" | grep -Eq '^[0-9]{4}-[0-9]{2}-[0-9]{2}$'; then
+            echo "经验库豁免补齐截止日期格式错误：${exemption_due}"
+            echo "下一步：使用 YYYY-MM-DD，且不晚于 T+1 日（UTC）。"
+            exit 1
+          fi
+
+          if ! due_epoch="$(date -u -d "${exemption_due}" +%s 2>/dev/null)"; then
+            echo "经验库豁免补齐截止日期不可解析：${exemption_due}"
+            echo "下一步：使用有效日期（YYYY-MM-DD）。"
+            exit 1
+          fi
+
+          today_utc="$(date -u +%Y-%m-%d)"
+          max_due_utc="$(date -u -d '+1 day' +%Y-%m-%d)"
+          if [[ "${exemption_due}" < "${today_utc}" ]] || [[ "${exemption_due}" > "${max_due_utc}" ]]; then
+            echo "经验库豁免补齐截止日期超出允许范围（日期口径 T+1 日）：${exemption_due}"
+            echo "下一步：将补齐截止日期设置为今天或明天（UTC），或直接补充经验库文档。"
+            exit 1
+          fi
+
+          echo "检测到高风险 Git 门禁变更，未更新经验库文档，但 PR 已提供有效豁免（日期口径 T+1 日）。"
 
       - name: Enforce docs update when business code/config/sql changes
         shell: bash

@@ -4,4 +4,4 @@
 本索引仅收录 `ADR-*` 文件，不收录 `HOTFIX-*` 临时记录。
 
 ## 列表
-- 暂无 ADR（新增 ADR 时请同步更新本索引）
+- [ADR-20260228-git-governance-closure](./ADR-20260228-git-governance-closure.md): Git 门禁闭环补强（分支前置、CAP 完成后提交提醒、清单联动阻断）

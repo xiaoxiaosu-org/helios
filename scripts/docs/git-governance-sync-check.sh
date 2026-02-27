@@ -82,6 +82,7 @@ required_files=(
   "docs/02-架构/工程治理/Git门禁与模板对照清单.md"
   "docs/02-架构/工程治理/分支与门禁落地.md"
   "docs/02-架构/工程治理/工程治理与门禁.md"
+  "docs/02-架构/工程治理/经验库/经验文档更新规则.md"
   "AGENTS.md"
 )
 
@@ -168,7 +169,10 @@ for required in \
   "HELIOS_ALLOW_PUSH_MAIN" \
   "git push --no-verify" \
   "quality-gates" \
-  "checks"; do
+  "checks" \
+  "Git 门禁相关实现变更必须同步更新对照清单" \
+  "高风险 Git 门禁变更需经验库更新（支持豁免）" \
+  "CAP 验收成功后提醒提交/PR 闭环"; do
   require_in_file "${required}" "${source_doc}"
 done
 
@@ -187,6 +191,22 @@ require_in_file "Feature-File Mapping" "docs/02-架构/工程治理/工程治理
 require_in_file "git-governance-sync-check.sh" "docs/02-架构/工程治理/工程治理与门禁.md"
 require_in_file "协作会话中必须打印提交结构化明细" "docs/02-架构/工程治理/工程治理与门禁.md"
 require_in_file "提交标题与关键说明默认使用中文" "docs/02-架构/工程治理/工程治理与门禁.md"
+require_in_file "必须先创建工作分支再改动文件" "docs/02-架构/工程治理/工程治理与门禁.md"
+require_in_file "Git 门禁相关实现文件" "docs/02-架构/工程治理/工程治理与门禁.md"
+require_in_file "必须提醒并推进“提交 -> 推送 -> PR”闭环" "docs/02-架构/工程治理/工程治理与门禁.md"
 require_in_file "协作会话同步打印 PR 结构化明细" "${process_doc}"
+require_in_file "接到需求先确认分支" "${process_doc}"
+require_in_file "若 CAP 验收返回" "${process_doc}"
+require_in_file "立即进入提交/推送/PR" "${process_doc}"
+require_in_file "Enforce governance checklist update for git gate changes" ".github/workflows/doc-check.yml"
+require_in_file "Enforce experience docs update for high-risk git governance changes" ".github/workflows/doc-check.yml"
+require_in_file "下一步：同步更新 docs/02-架构/工程治理/Git门禁与模板对照清单.md" ".github/workflows/doc-check.yml"
+require_in_file "下一步：更新 docs/02-架构/工程治理/经验库/" ".github/workflows/doc-check.yml"
+require_in_file "必须先创建工作分支再开始改动" "AGENTS.md"
+require_in_file "必须提醒并推进“提交 -> 推送 -> PR”闭环" "AGENTS.md"
+require_in_file "高风险 Git 门禁变更" "docs/02-架构/工程治理/工程治理与门禁.md"
+require_in_file "低风险治理文档变更" "docs/02-架构/工程治理/工程治理与门禁.md"
+require_in_file "经验库豁免说明" "docs/02-架构/工程治理/经验库/经验文档更新规则.md"
+require_in_file "<=T+1日" "docs/02-架构/工程治理/经验库/经验文档更新规则.md"
 
 log "校验通过"
