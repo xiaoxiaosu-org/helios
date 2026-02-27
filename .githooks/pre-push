@@ -67,13 +67,6 @@ print_commit_detail() {
 }
 
 branch="$(git symbolic-ref --quiet --short HEAD 2>/dev/null || true)"
-if [ -n "${branch}" ]; then
-  if [ "${branch}" = "main" ] && [ "${HELIOS_ALLOW_PUSH_MAIN:-0}" != "1" ]; then
-    log "禁止从 main 分支执行 push。请创建分支并走 PR。"
-    log "如确需破例（不推荐），可临时设置：HELIOS_ALLOW_PUSH_MAIN=1"
-    exit 1
-  fi
-fi
 
 if [ "${HELIOS_ALLOW_PUSH_MAIN:-0}" != "1" ]; then
   while read -r local_ref local_sha remote_ref remote_sha; do
