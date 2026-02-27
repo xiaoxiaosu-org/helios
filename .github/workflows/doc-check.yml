@@ -24,18 +24,20 @@ jobs:
           : > diff_meta.env
 
           if [ "${EVENT_NAME}" = "pull_request" ]; then
-            BASE_REF="${{ github.base_ref }}"
-            if [ -z "${BASE_REF}" ]; then
-              echo "pull_request 事件但 base_ref 为空，无法计算 diff。" >&2
+            BASE_SHA="${{ github.event.pull_request.base.sha }}"
+            HEAD_SHA="${{ github.event.pull_request.head.sha }}"
+
+            if [ -z "${BASE_SHA}" ] || [ -z "${HEAD_SHA}" ]; then
+              echo "pull_request 事件但 base/head sha 为空，无法计算 diff。" >&2
               exit 1
             fi
 
-            git fetch --no-tags --prune origin "${BASE_REF}:refs/remotes/origin/${BASE_REF}"
-            DIFF_RANGE="origin/${BASE_REF}...HEAD"
+            DIFF_RANGE="${BASE_SHA}...${HEAD_SHA}"
 
             echo "DIFF_MODE=pull_request" >> diff_meta.env
             echo "DIFF_RANGE=${DIFF_RANGE}" >> diff_meta.env
-            echo "BASE_REF=${BASE_REF}" >> diff_meta.env
+            echo "BASE_SHA=${BASE_SHA}" >> diff_meta.env
+            echo "HEAD_SHA=${HEAD_SHA}" >> diff_meta.env
 
             git diff --name-only "${DIFF_RANGE}" > changed_files.txt
             git diff --name-status "${DIFF_RANGE}" > changed_name_status.txt

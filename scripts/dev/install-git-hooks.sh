@@ -15,6 +15,7 @@ fi
 
 hooks_path=".githooks"
 required_hooks=(
+  "${hooks_path}/pre-commit"
   "${hooks_path}/pre-push"
   "${hooks_path}/commit-msg"
 )
@@ -56,3 +57,4 @@ log "已启用 hooks：core.hooksPath=${hooks_path}"
 log "已启用提交模板：commit.template=${template_abs}"
 log "提示：紧急情况下可用 git push --no-verify 临时跳过（需在 PR 说明原因）。"
 log "卸载：git config --unset core.hooksPath && git config --unset commit.template"
+log "已安装 hooks：$(printf \"%s \" \"${required_hooks[@]}\")"
