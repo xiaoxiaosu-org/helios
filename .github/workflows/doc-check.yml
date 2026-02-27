@@ -17,6 +17,9 @@ jobs:
         run: |
           set -euo pipefail
 
+          # Keep changed file paths in UTF-8 to avoid escaped octal output on CJK paths.
+          git config core.quotepath false
+
           EVENT_NAME="${{ github.event_name }}"
 
           : > changed_files.txt
