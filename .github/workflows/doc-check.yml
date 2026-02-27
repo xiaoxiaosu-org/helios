@@ -67,6 +67,110 @@ jobs:
           echo "Diff meta:"
           cat diff_meta.env || true
 
+      - name: Enforce commit subject convention
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          EVENT_NAME="${{ github.event_name }}"
+          : > commit_shas.txt
+          : > commit_subject_failures.txt
+
+          if [ "${EVENT_NAME}" = "pull_request" ]; then
+            BASE_REF="${{ github.base_ref }}"
+            git rev-list --no-merges "origin/${BASE_REF}..HEAD" > commit_shas.txt
+          else
+            BEFORE_SHA="${{ github.event.before }}"
+            AFTER_SHA="${{ github.sha }}"
+            if [ "${BEFORE_SHA}" = "0000000000000000000000000000000000000000" ]; then
+              git rev-list --no-merges -n 1 "${AFTER_SHA}" > commit_shas.txt
+            else
+              git rev-list --no-merges "${BEFORE_SHA}..${AFTER_SHA}" > commit_shas.txt
+            fi
+          fi
+
+          if [ ! -s commit_shas.txt ]; then
+            echo "无新增非 merge commit，跳过提交标题校验。"
+            exit 0
+          fi
+
+          subject_regex='^(feat|fix|docs|style|refactor|perf|test|build|ci|chore|revert)(\([[:alnum:]./_-]+\))?!?: .{1,72}$'
+          while IFS= read -r sha; do
+            [ -n "${sha}" ] || continue
+            subject="$(git show -s --format=%s "${sha}" | tr -d '\r')"
+
+            if echo "${subject}" | grep -Eq '^(fixup!|squash!|Revert ")'; then
+              continue
+            fi
+
+            if ! echo "${subject}" | grep -Eq "${subject_regex}"; then
+              echo "${sha}: ${subject}" >> commit_subject_failures.txt
+            fi
+          done < commit_shas.txt
+
+          if [ -s commit_subject_failures.txt ]; then
+            echo "以下提交标题不符合规范：type(scope): summary"
+            echo "允许类型：feat|fix|docs|style|refactor|perf|test|build|ci|chore|revert"
+            cat commit_subject_failures.txt
+            exit 1
+          fi
+
+      - name: Enforce PR template usage
+        if: github.event_name == 'pull_request'
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          template=".github/pull_request_template.md"
+          if [ ! -f "${template}" ] && [ -f ".github/PULL_REQUEST_TEMPLATE.md" ]; then
+            template=".github/PULL_REQUEST_TEMPLATE.md"
+          fi
+
+          if [ ! -f "${template}" ]; then
+            echo "缺少 PR 模板（.github/pull_request_template.md 或 .github/PULL_REQUEST_TEMPLATE.md）。"
+            exit 1
+          fi
+
+          pr_body_file="pr_body.md"
+          printf '%s\n' "${{ github.event.pull_request.body }}" > "${pr_body_file}"
+
+          if ! grep -q '[^[:space:]]' "${pr_body_file}"; then
+            echo "PR 描述不能为空，必须按模板填写。"
+            exit 1
+          fi
+
+          required_sections=(
+            "## 变更摘要（Summary）"
+            "## 变更类型（Type）"
+            "## 验证（Verification）"
+            "## docs / ADR（系统记录）"
+            "## 可观测性 / Trace"
+            "## 安全（Security）"
+            "## 影响与回滚（Impact / Rollback）"
+          )
+
+          for section in "${required_sections[@]}"; do
+            if ! grep -F "${section}" "${pr_body_file}" >/dev/null; then
+              echo "PR 描述缺少模板段落：${section}"
+              exit 1
+            fi
+          done
+
+          summary_block="$(awk '
+            /^## 变更摘要（Summary）/ {in_section=1; next}
+            /^## / {if (in_section) exit}
+            in_section {print}
+          ' "${pr_body_file}" | grep -vE '^[[:space:]]*(<!--.*-->)?[[:space:]]*$' || true)"
+          if [ -z "${summary_block}" ]; then
+            echo "PR 模板中的“变更摘要（Summary）”不能为空。"
+            exit 1
+          fi
+
+          if ! grep -Eq '^[[:space:]]*-[[:space:]]\[[xX]\][[:space:]](Feature|Bugfix|Refactor|Docs|Chore)[[:space:]]*$' "${pr_body_file}"; then
+            echo "PR 模板中的“变更类型（Type）”至少需要勾选一项。"
+            exit 1
+          fi
+
       - name: Enforce docs top-level structure and ADR base files
         shell: bash
         run: |
@@ -122,6 +226,18 @@ jobs:
           fi
 
           scripts/docs/index-check.sh
+
+      - name: Enforce rule docs markdown and Chinese description
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          if [ ! -x scripts/docs/rule-files-check.sh ]; then
+            echo "缺少可执行规则文件校验脚本：scripts/docs/rule-files-check.sh"
+            exit 1
+          fi
+
+          scripts/docs/rule-files-check.sh changed_files.txt
 
       - name: Enforce docs update when business code/config/sql changes
         shell: bash

@@ -16,18 +16,14 @@ cd "${root}"
 branch="$(git symbolic-ref --quiet --short HEAD 2>/dev/null || true)"
 if [ -n "${branch}" ]; then
   if [ "${branch}" = "main" ] && [ "${HELIOS_ALLOW_PUSH_MAIN:-0}" != "1" ]; then
-    log "禁止从 main 分支执行 push。请创建分支并走 PR："
-    log "  git checkout -b feat/<topic>（或 cap/CAP-00X-<topic>）"
+    log "禁止从 main 分支执行 push。请创建分支并走 PR。"
     log "如确需破例（不推荐），可临时设置：HELIOS_ALLOW_PUSH_MAIN=1"
     exit 1
   fi
 fi
 
-# Also block pushes that would update remote main directly (even if current branch is not main).
-# pre-push receives lines of: <local ref> <local sha> <remote ref> <remote sha>
 if [ "${HELIOS_ALLOW_PUSH_MAIN:-0}" != "1" ]; then
   while read -r local_ref local_sha remote_ref remote_sha; do
-    # Skip empty lines.
     [ -n "${remote_ref:-}" ] || continue
     if [ "${remote_ref}" = "refs/heads/main" ]; then
       log "禁止直接更新远端 main（检测到 push 目标为 refs/heads/main）。请走 PR 合并。"
@@ -37,11 +33,48 @@ if [ "${HELIOS_ALLOW_PUSH_MAIN:-0}" != "1" ]; then
   done
 fi
 
+upstream_ref="$(git rev-parse --abbrev-ref --symbolic-full-name @{upstream} 2>/dev/null || true)"
+commit_range=""
+diff_range=""
+if [ -n "${upstream_ref}" ]; then
+  commit_range="${upstream_ref}..HEAD"
+  diff_range="${upstream_ref}...HEAD"
+elif git rev-parse --verify HEAD~1 >/dev/null 2>&1; then
+  commit_range="HEAD~1..HEAD"
+  diff_range="HEAD~1...HEAD"
+fi
+
+if [ -n "${commit_range}" ]; then
+  log "待推送提交摘要（${commit_range}）："
+  git log --oneline --decorate "${commit_range}" || true
+  log "待推送提交详细说明（功能/涉及文件/主要改动/为什么改）："
+  git log --no-merges --format='---%n[%h] %s%n%b' "${commit_range}" || true
+  log "待推送文件摘要（${diff_range}）："
+  git diff --name-status "${diff_range}" || true
+else
+  log "待推送摘要：无法确定比较范围（可能为首次提交或无上游分支）。"
+fi
+
 if [ -x scripts/docs/index-check.sh ]; then
   log "运行：scripts/docs/index-check.sh"
   scripts/docs/index-check.sh
 else
   log "缺少 scripts/docs/index-check.sh（或不可执行），跳过。"
+fi
+
+if [ -x scripts/docs/rule-files-check.sh ]; then
+  log "运行：scripts/docs/rule-files-check.sh（待推送提交范围校验）"
+  tmp_changed="$(mktemp)"
+  upstream_ref="$(git rev-parse --abbrev-ref --symbolic-full-name @{upstream} 2>/dev/null || true)"
+  if [ -n "${upstream_ref}" ]; then
+    git diff --name-only "${upstream_ref}...HEAD" > "${tmp_changed}"
+  else
+    git diff --name-only HEAD~1..HEAD > "${tmp_changed}" || true
+  fi
+  scripts/docs/rule-files-check.sh "${tmp_changed}"
+  rm -f "${tmp_changed}"
+else
+  log "缺少 scripts/docs/rule-files-check.sh（或不可执行），跳过。"
 fi
 
 if [ -x scripts/ci/verify.sh ]; then
@@ -50,7 +83,6 @@ if [ -x scripts/ci/verify.sh ]; then
 else
   log "缺少 scripts/ci/verify.sh（或不可执行），跳过。"
 fi
-
 if [ -n "${branch}" ]; then
   if echo "${branch}" | grep -Eq 'CAP-[0-9]{3}'; then
     cap_id="$(echo "${branch}" | grep -Eo 'CAP-[0-9]{3}' | head -n1)"
