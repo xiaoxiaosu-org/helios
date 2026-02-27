@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+log() {
+  echo "[pre-commit] $*"
+}
+
+branch="$(git symbolic-ref --quiet --short HEAD 2>/dev/null || true)"
+if [ -z "${branch}" ]; then
+  exit 0
+fi
+
+if [ "${branch}" = "main" ] && [ "${HELIOS_ALLOW_COMMIT_MAIN:-0}" != "1" ]; then
+  log "禁止在 main 上直接提交。请创建分支并走 PR："
+  log "  git checkout -b feat/<topic>（或 cap/CAP-00X-<topic>）"
+  log "如确需破例（不推荐），可临时设置：HELIOS_ALLOW_COMMIT_MAIN=1"
+  exit 1
+fi
+

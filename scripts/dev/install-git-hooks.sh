@@ -14,14 +14,26 @@ if ! command -v git >/dev/null 2>&1; then
 fi
 
 hooks_path=".githooks"
-hook="${hooks_path}/pre-push"
+required_hooks=(
+  "${hooks_path}/pre-commit"
+  "${hooks_path}/pre-push"
+)
 
-if [ ! -f "${hook}" ]; then
-  log "缺少 hook 文件：${hook}"
+missing=0
+for hook in "${required_hooks[@]}"; do
+  if [ ! -f "${hook}" ]; then
+    log "缺少 hook 文件：${hook}"
+    missing=1
+  fi
+done
+
+if [ "${missing}" -ne 0 ]; then
   exit 3
 fi
 
-chmod +x "${hook}"
+for hook in "${required_hooks[@]}"; do
+  chmod +x "${hook}"
+done
 
 current="$(git config --get core.hooksPath || true)"
 if [ -n "${current}" ] && [ "${current}" != "${hooks_path}" ]; then
@@ -34,3 +46,4 @@ git config core.hooksPath "${hooks_path}"
 log "已启用 hooks：core.hooksPath=${hooks_path}"
 log "提示：紧急情况下可用 git push --no-verify 临时跳过（需在 PR 说明原因）。"
 log "卸载：git config --unset core.hooksPath"
+log "已安装 hooks：$(printf \"%s \" \"${required_hooks[@]}\")"
