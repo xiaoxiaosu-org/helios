@@ -439,6 +439,42 @@ jobs:
 
           scripts/docs/git-governance-sync-check.sh
 
+      - name: Enforce governance checklist update for git gate changes
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          gate_changed=0
+          while IFS= read -r f; do
+            case "${f}" in
+              .githooks/*|\
+              .github/workflows/doc-check.yml|\
+              .github/workflows/quality-gates.yml|\
+              .github/commit_message_template.md|\
+              .github/pull_request_template.md|\
+              .github/PULL_REQUEST_TEMPLATE.md|\
+              scripts/dev/install-git-hooks.sh|\
+              scripts/docs/git-governance-sync-check.sh|\
+              AGENTS.md|\
+              docs/02-架构/工程治理/工程治理与门禁.md|\
+              docs/02-架构/工程治理/分支与门禁落地.md)
+                gate_changed=1
+                break
+                ;;
+            esac
+          done < changed_files.txt
+
+          if [ "${gate_changed}" -eq 0 ]; then
+            echo "未检测到 Git 门禁相关实现/规则文件变更，跳过。"
+            exit 0
+          fi
+
+          if ! grep -Fx "docs/02-架构/工程治理/Git门禁与模板对照清单.md" changed_files.txt >/dev/null; then
+            echo "检测到 Git 门禁相关实现/规则文件变更，但未更新唯一信息源文档。"
+            echo "下一步：同步更新 docs/02-架构/工程治理/Git门禁与模板对照清单.md（实现位置/文档位置/自动约束）。"
+            exit 1
+          fi
+
       - name: Enforce docs update when business code/config/sql changes
         shell: bash
         run: |
