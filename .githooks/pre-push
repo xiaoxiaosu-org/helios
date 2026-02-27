@@ -47,6 +47,8 @@ fi
 if [ -n "${commit_range}" ]; then
   log "待推送提交摘要（${commit_range}）："
   git log --oneline --decorate "${commit_range}" || true
+  log "待推送提交详细说明（功能/涉及文件/主要改动/为什么改）："
+  git log --no-merges --format='---%n[%h] %s%n%b' "${commit_range}" || true
   log "待推送文件摘要（${diff_range}）："
   git diff --name-status "${diff_range}" || true
 else

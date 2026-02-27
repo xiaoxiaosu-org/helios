@@ -37,9 +37,11 @@ if echo "${subject}" | grep -Eq '<(scope|summary)>'; then
 fi
 
 required_headers=(
-  "Why:"
-  "How:"
-  "Verify:"
+  "功能:"
+  "涉及文件:"
+  "主要改动:"
+  "为什么改:"
+  "验证:"
 )
 
 for header in "${required_headers[@]}"; do
@@ -50,7 +52,7 @@ for header in "${required_headers[@]}"; do
   fi
 done
 
-if grep -Eq '<(why|change [0-9]+|verify command)>' "${msg_file}"; then
+if grep -Eq '<(功能描述|文件1|改动点 1|改动原因|验证命令)>' "${msg_file}"; then
   log "提交正文仍包含模板占位符，请填写后再提交。"
   exit 1
 fi

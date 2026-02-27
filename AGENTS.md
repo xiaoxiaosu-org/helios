@@ -70,7 +70,7 @@
 
 - 默认启用本地 hooks 与提交模板：`scripts/dev/install-git-hooks.sh`
 - 每次提交信息必须符合：`type(scope): summary`（支持 `!` 破坏性标记），类型：`feat|fix|docs|style|refactor|perf|test|build|ci|chore|revert`
-- 每次提交正文必须包含：`Why:`、`How:`、`Verify:`（模板：`.github/commit_message_template.txt`）
+- 每次提交正文必须包含：`功能:`、`涉及文件:`、`主要改动:`、`为什么改:`、`验证:`（模板：`.github/commit_message_template.txt`）
 - 合并 `main` 必须通过 PR，且 PR 描述必须按 `.github/pull_request_template.md` 填写（至少包含全部模板段落与 1 个 Type 勾选）
 - 执行远端 `git push` 前，必须先输出“本次改动摘要”（提交列表 + 文件列表）并获得协作者确认
 - 项目新增注释、说明、治理文档默认使用中文；确需英文术语时可保留英文术语原文
