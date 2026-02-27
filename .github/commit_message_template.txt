@@ -1,0 +1,11 @@
+type(scope): short summary
+
+Why:
+- <why>
+
+How:
+- <change 1>
+- <change 2>
+
+Verify:
+- <verify command>

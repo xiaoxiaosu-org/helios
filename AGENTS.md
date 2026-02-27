@@ -48,6 +48,7 @@
 - 生产代码路径禁止标准输出调试语句：`console.log` / `print(` / `System.out.println(`
 - 禁止硬编码密钥（Token/密码/私钥/AccessKey 等）；合并前会做 secrets 扫描
 - 必须存在 `CODEOWNERS` 以承载 Owner 审批机制
+- 规则文件必须使用 Markdown（`.md`）并使用中文描述（至少关键段落为中文）
 
 ---
 
@@ -62,3 +63,13 @@
 ## 5. 子目录 AGENTS.md 规则
 
 子目录允许新增 `AGENTS.md` 作为补充，但只能更严格，不能与根规则冲突；执行顺序为：根 → 父目录链 → 当前目录（近处更严格者优先）。
+
+---
+
+## 6. 提交与合并模板约束（协作默认）
+
+- 默认启用本地 hooks 与提交模板：`scripts/dev/install-git-hooks.sh`
+- 每次提交信息必须符合：`type(scope): summary`（支持 `!` 破坏性标记），类型：`feat|fix|docs|style|refactor|perf|test|build|ci|chore|revert`
+- 每次提交正文必须包含：`Why:`、`How:`、`Verify:`（模板：`.github/commit_message_template.txt`）
+- 合并 `main` 必须通过 PR，且 PR 描述必须按 `.github/pull_request_template.md` 填写（至少包含全部模板段落与 1 个 Type 勾选）
+- 项目新增注释、说明、治理文档默认使用中文；确需英文术语时可保留英文术语原文

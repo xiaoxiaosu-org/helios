@@ -1,0 +1,56 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+log() {
+  echo "[commit-msg] $*"
+}
+
+msg_file="${1:-}"
+if [ -z "${msg_file}" ] || [ ! -f "${msg_file}" ]; then
+  log "未提供 commit message 文件，跳过。"
+  exit 0
+fi
+
+if [ "${HELIOS_ALLOW_RELAXED_COMMIT_MSG:-0}" = "1" ]; then
+  log "检测到 HELIOS_ALLOW_RELAXED_COMMIT_MSG=1，跳过校验。"
+  exit 0
+fi
+
+subject="$(sed -n '1p' "${msg_file}" | tr -d '\r')"
+
+if echo "${subject}" | grep -Eq '^(Merge |fixup!|squash!|Revert ")'; then
+  log "检测到特殊提交（merge/fixup/squash/revert），跳过模板校验。"
+  exit 0
+fi
+
+subject_regex='^(feat|fix|docs|style|refactor|perf|test|build|ci|chore|revert)(\([[:alnum:]./_-]+\))?!?: .{1,72}$'
+if ! echo "${subject}" | grep -Eq "${subject_regex}"; then
+  log "提交标题不符合规范：${subject}"
+  log "期望：type(scope): summary"
+  log "类型：feat|fix|docs|style|refactor|perf|test|build|ci|chore|revert"
+  exit 1
+fi
+
+if echo "${subject}" | grep -Eq '<(scope|summary)>'; then
+  log "提交标题仍包含模板占位符，请填写后再提交。"
+  exit 1
+fi
+
+required_headers=(
+  "Why:"
+  "How:"
+  "Verify:"
+)
+
+for header in "${required_headers[@]}"; do
+  if ! grep -Eq "^${header}$" "${msg_file}"; then
+    log "提交正文缺少必填段落：${header}"
+    log "请使用 .github/commit_message_template.txt 作为提交模板。"
+    exit 1
+  fi
+done
+
+if grep -Eq '<(why|change [0-9]+|verify command)>' "${msg_file}"; then
+  log "提交正文仍包含模板占位符，请填写后再提交。"
+  exit 1
+fi
