@@ -46,6 +46,9 @@
 | 推送前执行 docs 与 CI 校验 | `.githooks/pre-push` | 本文件 + `工程治理与门禁.md` | hook 强制执行 `index-check/rule-files-check/git-governance-sync-check/ci-verify` |
 | PR 模板完整性与非空校验 | `doc-check.yml` | 本文件 + `工程治理与门禁.md` | CI 强制 |
 | PR 阶段打印结构化明细 | `doc-check.yml` | 本文件 + `工程治理与门禁.md` | CI 日志输出 |
+| 会话可见提交明细输出 | 协作流程约束 | 本文件 + `AGENTS.md` + `工程治理与门禁.md` + `分支与门禁落地.md` | `scripts/docs/git-governance-sync-check.sh` 校验规则存在 |
+| 会话可见推送明细输出 | 协作流程约束 | 本文件 + `AGENTS.md` + `工程治理与门禁.md` + `分支与门禁落地.md` | `scripts/docs/git-governance-sync-check.sh` 校验规则存在 |
+| 会话可见 PR 明细输出 | 协作流程约束 | 本文件 + `AGENTS.md` + `工程治理与门禁.md` + `分支与门禁落地.md` | `scripts/docs/git-governance-sync-check.sh` 校验规则存在 |
 | `CODEOWNERS` 基线 | `quality-gates.yml` | 本文件 + `AGENTS.md` + `工程治理与门禁.md` | CI 强制 |
 | secrets 扫描与 debug print 阻断 | `quality-gates.yml` | 本文件 + `AGENTS.md` + `工程治理与门禁.md` | CI 强制 |
 
@@ -66,6 +69,7 @@
 - 临时放宽变量（`HELIOS_ALLOW_COMMIT_MAIN`、`HELIOS_ALLOW_RELAXED_COMMIT_MSG`、`HELIOS_ALLOW_PUSH_MAIN`）
 - CI 必选检查（`quality-gates`、`checks`）
 - 文档职责分离（本文件承载细项、`分支与门禁落地.md` 只承载流程）
+- 会话可见输出规则（`commit/push/PR` 三阶段）
 
 接入点：
 - 本地：`.githooks/pre-push`
@@ -98,3 +102,26 @@
 1) 先改模板（输入结构）
 2) 再改校验（hook/CI）
 3) 最后改文档与对照清单
+
+---
+
+## 6. 会话可见输出规则（协作强制）
+
+目标：用户看不到终端 hook/CI 输出时，仍可在协作会话直接审阅关键信息。
+
+1) commit 阶段（提交后立即在会话输出）
+- 提交 hash（短哈希）与标题
+- 功能
+- 功能与文件映射
+- 文件清单（name-status）
+- 变更统计（files changed / insertions / deletions）
+
+2) push 阶段（执行 push 前在会话输出，用户确认后再 push）
+- 待推送提交列表
+- 待推送文件列表
+- 若含多提交，至少给出每个提交标题与范围说明
+
+3) PR 阶段（创建/更新 PR 后在会话输出）
+- PR 标题与链接
+- PR 结构化摘要（Summary / Features / Feature-File Mapping / Why / What Changed / Verification / Impact）
+- 关键风险与回滚要点

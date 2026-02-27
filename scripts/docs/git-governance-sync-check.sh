@@ -170,8 +170,19 @@ for required in \
   require_in_file "${required}" "${source_doc}"
 done
 
+for session_rule in \
+  "会话可见输出规则" \
+  "commit 阶段" \
+  "push 阶段" \
+  "PR 阶段"; do
+  require_in_file "${session_rule}" "${source_doc}"
+done
+
 require_in_file "功能与文件映射:" "AGENTS.md"
+require_in_file "协作会话中同步打印结构化明细" "AGENTS.md"
 require_in_file "Feature-File Mapping" "docs/02-架构/工程治理/工程治理与门禁.md"
 require_in_file "git-governance-sync-check.sh" "docs/02-架构/工程治理/工程治理与门禁.md"
+require_in_file "协作会话中必须打印提交结构化明细" "docs/02-架构/工程治理/工程治理与门禁.md"
+require_in_file "协作会话同步打印 PR 结构化明细" "${process_doc}"
 
 log "校验通过"
