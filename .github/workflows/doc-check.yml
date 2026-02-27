@@ -105,6 +105,11 @@ jobs:
 
             if ! echo "${subject}" | grep -Eq "${subject_regex}"; then
               echo "${sha}: ${subject}" >> commit_subject_failures.txt
+              continue
+            fi
+
+            if ! echo "${subject}" | grep -P -q '[\x{4e00}-\x{9fff}]'; then
+              echo "${sha}: 提交标题默认应使用中文（可保留必要英文术语） -> ${subject}" >> commit_subject_failures.txt
             fi
           done < commit_shas.txt
 
@@ -112,6 +117,106 @@ jobs:
             echo "以下提交标题不符合规范：type(scope): summary"
             echo "允许类型：feat|fix|docs|style|refactor|perf|test|build|ci|chore|revert"
             cat commit_subject_failures.txt
+            exit 1
+          fi
+
+      - name: Enforce and print structured commit details
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          if [ ! -s commit_shas.txt ]; then
+            echo "无新增非 merge commit，跳过提交结构化明细校验。"
+            exit 0
+          fi
+
+          required_headers=(
+            "功能:"
+            "功能与文件映射:"
+            "涉及文件:"
+            "主要改动:"
+            "为什么改:"
+            "验证:"
+          )
+          headers_regex='^(功能:|功能与文件映射:|涉及文件:|主要改动:|为什么改:|验证:)$'
+          : > commit_body_failures.txt
+
+          extract_section() {
+            local file="$1"
+            local header="$2"
+            awk -v header="${header}" -v headers_regex="${headers_regex}" '
+              $0 == header {in_section=1; next}
+              $0 ~ headers_regex {if (in_section) exit}
+              in_section {print}
+            ' "${file}"
+          }
+
+          clean_section() {
+            local file="$1"
+            local header="$2"
+            extract_section "${file}" "${header}" \
+              | sed 's/\r$//' \
+              | grep -vE '^[[:space:]]*(<!--.*-->)?[[:space:]]*$' || true
+          }
+
+          while IFS= read -r sha; do
+            [ -n "${sha}" ] || continue
+            subject="$(git show -s --format=%s "${sha}" | tr -d '\r')"
+            if echo "${subject}" | grep -Eq '^(fixup!|squash!|Revert ")'; then
+              continue
+            fi
+
+            body_file="$(mktemp)"
+            git show -s --format=%B "${sha}" > "${body_file}"
+
+            for header in "${required_headers[@]}"; do
+              if ! grep -Fx "${header}" "${body_file}" >/dev/null; then
+                echo "${sha}: 缺少段落 ${header}" >> commit_body_failures.txt
+                continue
+              fi
+
+              section_content="$(clean_section "${body_file}" "${header}")"
+              if [ -z "${section_content}" ]; then
+                echo "${sha}: 段落为空 ${header}" >> commit_body_failures.txt
+                continue
+              fi
+
+              if echo "${section_content}" | grep -Eq '<[^>]+>'; then
+                echo "${sha}: 段落包含占位符 ${header}" >> commit_body_failures.txt
+              fi
+            done
+
+            mapping_block="$(clean_section "${body_file}" "功能与文件映射:")"
+            if [ -n "${mapping_block}" ] && ! echo "${mapping_block}" | grep -Eq '^[[:space:]]*-[[:space:]]*[^:]+:[[:space:]]*.+$'; then
+              echo "${sha}: 功能与文件映射格式错误（需为 - 功能: 文件列表）" >> commit_body_failures.txt
+            fi
+
+            for zh_header in "功能:" "主要改动:" "为什么改:"; do
+              zh_content="$(clean_section "${body_file}" "${zh_header}")"
+              if [ -n "${zh_content}" ] && ! echo "${zh_content}" | grep -P -q '[\x{4e00}-\x{9fff}]'; then
+                echo "${sha}: 段落默认应包含中文描述 ${zh_header}" >> commit_body_failures.txt
+              fi
+            done
+
+            short_sha="$(git rev-parse --short "${sha}")"
+            echo "[commit-detail] -----"
+            echo "[commit-detail] 提交: [${short_sha}] ${subject}"
+            for header in "功能:" "功能与文件映射:" "涉及文件:" "为什么改:" "验证:"; do
+              section_content="$(clean_section "${body_file}" "${header}")"
+              if [ -n "${section_content}" ]; then
+                echo "[commit-detail] ${header}"
+                printf '%s\n' "${section_content}" | sed 's/^/[commit-detail]   /'
+              fi
+            done
+            echo "[commit-detail] 文件清单："
+            git show --name-status --format='' "${sha}" | sed 's/^/[commit-detail]   /' || true
+
+            rm -f "${body_file}"
+          done < commit_shas.txt
+
+          if [ -s commit_body_failures.txt ]; then
+            echo "以下提交不满足结构化提交模板要求："
+            cat commit_body_failures.txt
             exit 1
           fi
 
@@ -142,6 +247,10 @@ jobs:
           required_sections=(
             "## 变更摘要（Summary）"
             "## 变更类型（Type）"
+            "## 功能清单（Features）"
+            "## 功能与文件映射（Feature-File Mapping）"
+            "## 改动原因（Why）"
+            "## 主要改动（What Changed）"
             "## 验证（Verification）"
             "## docs / ADR（系统记录）"
             "## 可观测性 / Trace"
@@ -156,19 +265,92 @@ jobs:
             fi
           done
 
-          summary_block="$(awk '
-            /^## 变更摘要（Summary）/ {in_section=1; next}
-            /^## / {if (in_section) exit}
-            in_section {print}
-          ' "${pr_body_file}" | grep -vE '^[[:space:]]*(<!--.*-->)?[[:space:]]*$' || true)"
-          if [ -z "${summary_block}" ]; then
-            echo "PR 模板中的“变更摘要（Summary）”不能为空。"
+          extract_section() {
+            local section_title="$1"
+            awk -v section_title="${section_title}" '
+              $0 == section_title {in_section=1; next}
+              /^## / {if (in_section) exit}
+              in_section {print}
+            ' "${pr_body_file}"
+          }
+
+          filter_meaningful_lines() {
+            grep -vE '^[[:space:]]*(<!--.*-->)?[[:space:]]*$' \
+              | grep -vE '^[[:space:]]*-[[:space:]]*[^:：]+[：:][[:space:]]*$' \
+              | grep -vE '^[[:space:]]*<[[:space:]]*[^>]+>[[:space:]]*$' || true
+          }
+
+          require_non_empty_section() {
+            local section_title="$1"
+            local block
+            block="$(extract_section "${section_title}" | filter_meaningful_lines)"
+            if [ -z "${block}" ]; then
+              echo "PR 模板中的“${section_title}”不能为空。"
+              exit 1
+            fi
+          }
+
+          require_non_empty_section "## 变更摘要（Summary）"
+          require_non_empty_section "## 功能清单（Features）"
+          require_non_empty_section "## 功能与文件映射（Feature-File Mapping）"
+          require_non_empty_section "## 改动原因（Why）"
+          require_non_empty_section "## 主要改动（What Changed）"
+          require_non_empty_section "## 影响与回滚（Impact / Rollback）"
+
+          mapping_block="$(extract_section "## 功能与文件映射（Feature-File Mapping）" | grep -vE '^[[:space:]]*(<!--.*-->)?[[:space:]]*$' || true)"
+          if ! echo "${mapping_block}" | grep -Eq '^[[:space:]]*-[[:space:]]*[^:]+:[[:space:]]*.+$'; then
+            echo "PR 模板中的“功能与文件映射”格式错误，要求：- 功能: 文件列表"
             exit 1
           fi
 
           if ! grep -Eq '^[[:space:]]*-[[:space:]]\[[xX]\][[:space:]](Feature|Bugfix|Refactor|Docs|Chore)[[:space:]]*$' "${pr_body_file}"; then
             echo "PR 模板中的“变更类型（Type）”至少需要勾选一项。"
             exit 1
+          fi
+
+      - name: Print structured PR details
+        if: github.event_name == 'pull_request'
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          pr_title="$(printf '%s' "${{ github.event.pull_request.title }}" | tr -d '\r')"
+          pr_body_file="pr_body.md"
+          printf '%s\n' "${{ github.event.pull_request.body }}" > "${pr_body_file}"
+
+          print_section() {
+            local section_title="$1"
+            echo "[pr-detail] ${section_title}"
+            section_content="$(awk -v section_title="${section_title}" '
+              $0 == section_title {in_section=1; next}
+              /^## / {if (in_section) exit}
+              in_section {print}
+            ' "${pr_body_file}" | grep -vE '^[[:space:]]*(<!--.*-->)?[[:space:]]*$' || true)"
+
+            if [ -z "${section_content}" ]; then
+              echo "[pr-detail]   (空)"
+            else
+              printf '%s\n' "${section_content}" | sed 's/^/[pr-detail]   /'
+            fi
+          }
+
+          echo "[pr-detail] 标题: ${pr_title}"
+          print_section "## 变更摘要（Summary）"
+          print_section "## 功能清单（Features）"
+          print_section "## 功能与文件映射（Feature-File Mapping）"
+          print_section "## 改动原因（Why）"
+          print_section "## 主要改动（What Changed）"
+          print_section "## 验证（Verification）"
+          print_section "## docs / ADR（系统记录）"
+          print_section "## 可观测性 / Trace"
+          print_section "## 安全（Security）"
+          print_section "## 影响与回滚（Impact / Rollback）"
+
+          echo "[pr-detail] 文件清单（changed_files.txt）"
+          if [ -s changed_files.txt ]; then
+            sed 's/^/[pr-detail]   /' changed_files.txt
+          else
+            echo "[pr-detail]   (无文件变更)"
           fi
 
       - name: Enforce docs top-level structure and ADR base files
@@ -238,6 +420,18 @@ jobs:
           fi
 
           scripts/docs/rule-files-check.sh changed_files.txt
+
+      - name: Enforce git governance sync (hook/workflow/template/docs)
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          if [ ! -x scripts/docs/git-governance-sync-check.sh ]; then
+            echo "缺少可执行一致性校验脚本：scripts/docs/git-governance-sync-check.sh"
+            exit 1
+          fi
+
+          scripts/docs/git-governance-sync-check.sh
 
       - name: Enforce docs update when business code/config/sql changes
         shell: bash
