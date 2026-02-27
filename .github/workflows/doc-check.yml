@@ -409,6 +409,18 @@ jobs:
 
           scripts/docs/rule-files-check.sh changed_files.txt
 
+      - name: Enforce git governance sync (hook/workflow/template/docs)
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          if [ ! -x scripts/docs/git-governance-sync-check.sh ]; then
+            echo "缺少可执行一致性校验脚本：scripts/docs/git-governance-sync-check.sh"
+            exit 1
+          fi
+
+          scripts/docs/git-governance-sync-check.sh
+
       - name: Enforce docs update when business code/config/sql changes
         shell: bash
         run: |

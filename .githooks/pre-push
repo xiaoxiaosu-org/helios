@@ -140,6 +140,13 @@ else
   log "缺少 scripts/docs/rule-files-check.sh（或不可执行），跳过。"
 fi
 
+if [ -x scripts/docs/git-governance-sync-check.sh ]; then
+  log "运行：scripts/docs/git-governance-sync-check.sh"
+  scripts/docs/git-governance-sync-check.sh
+else
+  log "缺少 scripts/docs/git-governance-sync-check.sh（或不可执行），跳过。"
+fi
+
 if [ -x scripts/ci/verify.sh ]; then
   log "运行：scripts/ci/verify.sh"
   scripts/ci/verify.sh
