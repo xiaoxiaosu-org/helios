@@ -33,6 +33,26 @@ if [ "${HELIOS_ALLOW_PUSH_MAIN:-0}" != "1" ]; then
   done
 fi
 
+upstream_ref="$(git rev-parse --abbrev-ref --symbolic-full-name @{upstream} 2>/dev/null || true)"
+commit_range=""
+diff_range=""
+if [ -n "${upstream_ref}" ]; then
+  commit_range="${upstream_ref}..HEAD"
+  diff_range="${upstream_ref}...HEAD"
+elif git rev-parse --verify HEAD~1 >/dev/null 2>&1; then
+  commit_range="HEAD~1..HEAD"
+  diff_range="HEAD~1...HEAD"
+fi
+
+if [ -n "${commit_range}" ]; then
+  log "待推送提交摘要（${commit_range}）："
+  git log --oneline --decorate "${commit_range}" || true
+  log "待推送文件摘要（${diff_range}）："
+  git diff --name-status "${diff_range}" || true
+else
+  log "待推送摘要：无法确定比较范围（可能为首次提交或无上游分支）。"
+fi
+
 if [ -x scripts/docs/index-check.sh ]; then
   log "运行：scripts/docs/index-check.sh"
   scripts/docs/index-check.sh
