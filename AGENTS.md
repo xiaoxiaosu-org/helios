@@ -70,7 +70,11 @@
 
 - 默认启用本地 hooks 与提交模板：`scripts/dev/install-git-hooks.sh`
 - 每次提交信息必须符合：`type(scope): summary`（支持 `!` 破坏性标记），类型：`feat|fix|docs|style|refactor|perf|test|build|ci|chore|revert`
-- 每次提交正文必须包含：`功能:`、`涉及文件:`、`主要改动:`、`为什么改:`、`验证:`（模板：`.github/commit_message_template.txt`）
+- 提交标题与关键说明默认使用中文（可保留必要英文术语）；如确需本次放宽可用 `HELIOS_ALLOW_NON_ZH_COMMIT_MSG=1`
+- 每次提交正文必须包含：`功能:`、`功能与文件映射:`、`涉及文件:`、`主要改动:`、`为什么改:`、`验证:`（模板：`.github/commit_message_template.md`）
 - 合并 `main` 必须通过 PR，且 PR 描述必须按 `.github/pull_request_template.md` 填写（至少包含全部模板段落与 1 个 Type 勾选）
+- `git commit` 与 `git push`/PR 阶段必须输出结构化改动明细（标题、功能、功能与文件映射、改动原因、文件清单等）
+- 执行 `git commit`、`git push`、PR 相关操作时，必须在协作会话中同步打印结构化明细（用户可见），不得仅依赖 hook/CI 日志
+- Hook/Workflow/模板/治理文档必须保持一致，并通过：`scripts/docs/git-governance-sync-check.sh`
 - 执行远端 `git push` 前，必须先输出“本次改动摘要”（提交列表 + 文件列表）并获得协作者确认
 - 项目新增注释、说明、治理文档默认使用中文；确需英文术语时可保留英文术语原文
