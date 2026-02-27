@@ -13,6 +13,30 @@ fi
 
 cd "${root}"
 
+branch="$(git symbolic-ref --quiet --short HEAD 2>/dev/null || true)"
+if [ -n "${branch}" ]; then
+  if [ "${branch}" = "main" ] && [ "${HELIOS_ALLOW_PUSH_MAIN:-0}" != "1" ]; then
+    log "禁止从 main 分支执行 push。请创建分支并走 PR："
+    log "  git checkout -b feat/<topic>（或 cap/CAP-00X-<topic>）"
+    log "如确需破例（不推荐），可临时设置：HELIOS_ALLOW_PUSH_MAIN=1"
+    exit 1
+  fi
+fi
+
+# Also block pushes that would update remote main directly (even if current branch is not main).
+# pre-push receives lines of: <local ref> <local sha> <remote ref> <remote sha>
+if [ "${HELIOS_ALLOW_PUSH_MAIN:-0}" != "1" ]; then
+  while read -r local_ref local_sha remote_ref remote_sha; do
+    # Skip empty lines.
+    [ -n "${remote_ref:-}" ] || continue
+    if [ "${remote_ref}" = "refs/heads/main" ]; then
+      log "禁止直接更新远端 main（检测到 push 目标为 refs/heads/main）。请走 PR 合并。"
+      log "如确需破例（不推荐），可临时设置：HELIOS_ALLOW_PUSH_MAIN=1"
+      exit 1
+    fi
+  done
+fi
+
 if [ -x scripts/docs/index-check.sh ]; then
   log "运行：scripts/docs/index-check.sh"
   scripts/docs/index-check.sh
@@ -27,7 +51,6 @@ else
   log "缺少 scripts/ci/verify.sh（或不可执行），跳过。"
 fi
 
-branch="$(git symbolic-ref --quiet --short HEAD 2>/dev/null || true)"
 if [ -n "${branch}" ]; then
   if echo "${branch}" | grep -Eq 'CAP-[0-9]{3}'; then
     cap_id="$(echo "${branch}" | grep -Eo 'CAP-[0-9]{3}' | head -n1)"
@@ -43,4 +66,3 @@ if [ -n "${branch}" ]; then
 else
   log "未检测到当前分支（可能是 detached HEAD），跳过 CAP 验收。"
 fi
-
