@@ -13,6 +13,59 @@ fi
 
 cd "${root}"
 
+headers_regex='^(功能:|功能与文件映射:|涉及文件:|主要改动:|为什么改:|验证:)$'
+
+extract_section_from_file() {
+  local file="$1"
+  local header="$2"
+  awk -v header="${header}" -v headers_regex="${headers_regex}" '
+    $0 == header {
+      in_section = 1
+      next
+    }
+    $0 ~ headers_regex {
+      if (in_section) {
+        exit
+      }
+    }
+    in_section {
+      print
+    }
+  ' "${file}"
+}
+
+clean_section_from_file() {
+  local file="$1"
+  local header="$2"
+  extract_section_from_file "${file}" "${header}" \
+    | sed 's/\r$//' \
+    | grep -vE '^[[:space:]]*(<!--.*-->)?[[:space:]]*$' || true
+}
+
+print_commit_detail() {
+  local sha="$1"
+  local short_sha
+  local subject
+  local body_file
+  short_sha="$(git rev-parse --short "${sha}")"
+  subject="$(git show -s --format=%s "${sha}" | tr -d '\r')"
+  body_file="$(mktemp)"
+  git show -s --format=%B "${sha}" > "${body_file}"
+
+  log "-----"
+  log "提交: [${short_sha}] ${subject}"
+
+  for header in "功能:" "功能与文件映射:" "涉及文件:" "为什么改:" "验证:"; do
+    section_content="$(clean_section_from_file "${body_file}" "${header}")"
+    if [ -n "${section_content}" ]; then
+      log "${header}"
+      printf '%s\n' "${section_content}" | sed 's/^/[pre-push]   /'
+    fi
+  done
+
+  rm -f "${body_file}"
+}
+
 branch="$(git symbolic-ref --quiet --short HEAD 2>/dev/null || true)"
 if [ -n "${branch}" ]; then
   if [ "${branch}" = "main" ] && [ "${HELIOS_ALLOW_PUSH_MAIN:-0}" != "1" ]; then
@@ -47,8 +100,18 @@ fi
 if [ -n "${commit_range}" ]; then
   log "待推送提交摘要（${commit_range}）："
   git log --oneline --decorate "${commit_range}" || true
-  log "待推送提交详细说明（功能/涉及文件/主要改动/为什么改）："
-  git log --no-merges --format='---%n[%h] %s%n%b' "${commit_range}" || true
+
+  commit_list="$(git rev-list --no-merges --reverse "${commit_range}" || true)"
+  if [ -n "${commit_list}" ]; then
+    log "待推送提交结构化明细："
+    while IFS= read -r sha; do
+      [ -n "${sha}" ] || continue
+      print_commit_detail "${sha}"
+    done <<< "${commit_list}"
+  else
+    log "待推送提交结构化明细：无新增非 merge 提交。"
+  fi
+
   log "待推送文件摘要（${diff_range}）："
   git diff --name-status "${diff_range}" || true
 else

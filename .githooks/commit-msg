@@ -38,21 +38,79 @@ fi
 
 required_headers=(
   "功能:"
+  "功能与文件映射:"
   "涉及文件:"
   "主要改动:"
   "为什么改:"
   "验证:"
 )
 
+headers_regex='^(功能:|功能与文件映射:|涉及文件:|主要改动:|为什么改:|验证:)$'
+
+extract_section() {
+  local header="$1"
+  awk -v header="${header}" -v headers_regex="${headers_regex}" '
+    $0 == header {
+      in_section = 1
+      next
+    }
+    $0 ~ headers_regex {
+      if (in_section) {
+        exit
+      }
+    }
+    in_section {
+      print
+    }
+  ' "${msg_file}"
+}
+
+clean_section() {
+  local header="$1"
+  extract_section "${header}" \
+    | sed 's/\r$//' \
+    | grep -vE '^[[:space:]]*(<!--.*-->)?[[:space:]]*$' || true
+}
+
 for header in "${required_headers[@]}"; do
   if ! grep -Eq "^${header}$" "${msg_file}"; then
     log "提交正文缺少必填段落：${header}"
-    log "请使用 .github/commit_message_template.txt 作为提交模板。"
+    log "请使用 .github/commit_message_template.md 作为提交模板。"
+    exit 1
+  fi
+
+  section_content="$(clean_section "${header}")"
+  if [ -z "${section_content}" ]; then
+    log "提交正文段落为空：${header}"
+    exit 1
+  fi
+
+  if echo "${section_content}" | grep -Eq '<[^>]+>'; then
+    log "提交正文段落仍包含占位符：${header}"
     exit 1
   fi
 done
 
-if grep -Eq '<(功能描述|文件1|改动点 1|改动原因|验证命令)>' "${msg_file}"; then
-  log "提交正文仍包含模板占位符，请填写后再提交。"
+feature_mapping="$(clean_section "功能与文件映射:")"
+if ! echo "${feature_mapping}" | grep -Eq '^[[:space:]]*-[[:space:]]*[^:]+:[[:space:]]*.+$'; then
+  log "“功能与文件映射:”段落格式不正确，需使用：- 功能: 文件列表"
   exit 1
 fi
+
+print_section() {
+  local header="$1"
+  local section_content
+  section_content="$(clean_section "${header}")"
+  log "${header}"
+  printf '%s\n' "${section_content}" | sed 's/^/[commit-msg]   /'
+}
+
+log "结构化提交明细："
+log "标题: ${subject}"
+print_section "功能:"
+print_section "功能与文件映射:"
+print_section "涉及文件:"
+print_section "为什么改:"
+print_section "验证:"
+log "暂存文件变更："
+git diff --cached --name-status | sed 's/^/[commit-msg]   /' || true
