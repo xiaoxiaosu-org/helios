@@ -145,6 +145,7 @@ require_in_file "checks" "${process_doc}"
 for detail in \
   "HELIOS_ALLOW_COMMIT_MAIN" \
   "HELIOS_ALLOW_RELAXED_COMMIT_MSG" \
+  "HELIOS_ALLOW_NON_ZH_COMMIT_MSG" \
   "HELIOS_ALLOW_PUSH_MAIN" \
   "git push --no-verify" \
   "scripts/docs/rule-files-check.sh" \
@@ -163,6 +164,7 @@ for required in \
   "scripts/cap/verify.sh CAP-00X" \
   "HELIOS_ALLOW_COMMIT_MAIN" \
   "HELIOS_ALLOW_RELAXED_COMMIT_MSG" \
+  "HELIOS_ALLOW_NON_ZH_COMMIT_MSG" \
   "HELIOS_ALLOW_PUSH_MAIN" \
   "git push --no-verify" \
   "quality-gates" \
@@ -180,9 +182,11 @@ done
 
 require_in_file "功能与文件映射:" "AGENTS.md"
 require_in_file "协作会话中同步打印结构化明细" "AGENTS.md"
+require_in_file "提交标题与关键说明默认使用中文" "AGENTS.md"
 require_in_file "Feature-File Mapping" "docs/02-架构/工程治理/工程治理与门禁.md"
 require_in_file "git-governance-sync-check.sh" "docs/02-架构/工程治理/工程治理与门禁.md"
 require_in_file "协作会话中必须打印提交结构化明细" "docs/02-架构/工程治理/工程治理与门禁.md"
+require_in_file "提交标题与关键说明默认使用中文" "docs/02-架构/工程治理/工程治理与门禁.md"
 require_in_file "协作会话同步打印 PR 结构化明细" "${process_doc}"
 
 log "校验通过"

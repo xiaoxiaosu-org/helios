@@ -40,6 +40,7 @@
 |---|---|---|---|
 | 禁止在 `main` 直接提交 | `.githooks/pre-commit` | 本文件 + `工程治理与门禁.md` | `scripts/docs/git-governance-sync-check.sh` |
 | 提交标题格式校验 | `.githooks/commit-msg` + `doc-check.yml` | 本文件 + `AGENTS.md` + `工程治理与门禁.md` | hook + CI 双重校验 |
+| 提交中文默认规则（标题/关键说明） | `.githooks/commit-msg` + `doc-check.yml` | 本文件 + `AGENTS.md` + `工程治理与门禁.md` | hook + CI 双重校验 |
 | 提交正文结构化段落校验 | `.githooks/commit-msg` + `doc-check.yml` | 本文件 + `AGENTS.md` + `工程治理与门禁.md` | hook + CI 双重校验 |
 | 提交阶段打印结构化明细 | `.githooks/commit-msg` | 本文件 + `工程治理与门禁.md` | hook 日志输出 |
 | 推送前打印结构化明细 | `.githooks/pre-push` | 本文件 + `工程治理与门禁.md` | hook 日志输出 |
@@ -67,6 +68,7 @@
 - 关键本地脚本（`scripts/docs/index-check.sh` / `scripts/docs/rule-files-check.sh` / `scripts/docs/git-governance-sync-check.sh` / `scripts/ci/verify.sh`）
 - CAP 验收入口（`scripts/cap/verify.sh CAP-00X`）
 - 临时放宽变量（`HELIOS_ALLOW_COMMIT_MAIN`、`HELIOS_ALLOW_RELAXED_COMMIT_MSG`、`HELIOS_ALLOW_PUSH_MAIN`）
+- 中文提交放宽变量（`HELIOS_ALLOW_NON_ZH_COMMIT_MSG`）
 - CI 必选检查（`quality-gates`、`checks`）
 - 文档职责分离（本文件承载细项、`分支与门禁落地.md` 只承载流程）
 - 会话可见输出规则（`commit/push/PR` 三阶段）
@@ -82,6 +84,7 @@
 允许的临时放宽变量：
 - `HELIOS_ALLOW_COMMIT_MAIN=1`：仅放宽“main 直接提交”拦截
 - `HELIOS_ALLOW_RELAXED_COMMIT_MSG=1`：仅放宽本次提交信息结构校验
+- `HELIOS_ALLOW_NON_ZH_COMMIT_MSG=1`：仅放宽本次“默认中文提交”校验
 - `HELIOS_ALLOW_PUSH_MAIN=1`：仅放宽本地 main 直推拦截（远端 ruleset 仍可拒绝）
 - `git push --no-verify`：跳过本地 hook
 

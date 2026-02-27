@@ -105,6 +105,11 @@ jobs:
 
             if ! echo "${subject}" | grep -Eq "${subject_regex}"; then
               echo "${sha}: ${subject}" >> commit_subject_failures.txt
+              continue
+            fi
+
+            if ! echo "${subject}" | grep -P -q '[\x{4e00}-\x{9fff}]'; then
+              echo "${sha}: 提交标题默认应使用中文（可保留必要英文术语） -> ${subject}" >> commit_subject_failures.txt
             fi
           done < commit_shas.txt
 
@@ -185,6 +190,13 @@ jobs:
             if [ -n "${mapping_block}" ] && ! echo "${mapping_block}" | grep -Eq '^[[:space:]]*-[[:space:]]*[^:]+:[[:space:]]*.+$'; then
               echo "${sha}: 功能与文件映射格式错误（需为 - 功能: 文件列表）" >> commit_body_failures.txt
             fi
+
+            for zh_header in "功能:" "主要改动:" "为什么改:"; do
+              zh_content="$(clean_section "${body_file}" "${zh_header}")"
+              if [ -n "${zh_content}" ] && ! echo "${zh_content}" | grep -P -q '[\x{4e00}-\x{9fff}]'; then
+                echo "${sha}: 段落默认应包含中文描述 ${zh_header}" >> commit_body_failures.txt
+              fi
+            done
 
             short_sha="$(git rev-parse --short "${sha}")"
             echo "[commit-detail] -----"

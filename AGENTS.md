@@ -70,6 +70,7 @@
 
 - 默认启用本地 hooks 与提交模板：`scripts/dev/install-git-hooks.sh`
 - 每次提交信息必须符合：`type(scope): summary`（支持 `!` 破坏性标记），类型：`feat|fix|docs|style|refactor|perf|test|build|ci|chore|revert`
+- 提交标题与关键说明默认使用中文（可保留必要英文术语）；如确需本次放宽可用 `HELIOS_ALLOW_NON_ZH_COMMIT_MSG=1`
 - 每次提交正文必须包含：`功能:`、`功能与文件映射:`、`涉及文件:`、`主要改动:`、`为什么改:`、`验证:`（模板：`.github/commit_message_template.md`）
 - 合并 `main` 必须通过 PR，且 PR 描述必须按 `.github/pull_request_template.md` 填写（至少包含全部模板段落与 1 个 Type 勾选）
 - `git commit` 与 `git push`/PR 阶段必须输出结构化改动明细（标题、功能、功能与文件映射、改动原因、文件清单等）

@@ -1,4 +1,4 @@
-type(scope): short summary
+type(scope): 中文摘要（可保留必要英文术语）
 
 功能:
 - <功能 1：一句话说明交付能力>

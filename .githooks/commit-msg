@@ -16,6 +16,12 @@ if [ "${HELIOS_ALLOW_RELAXED_COMMIT_MSG:-0}" = "1" ]; then
   exit 0
 fi
 
+allow_non_zh=0
+if [ "${HELIOS_ALLOW_NON_ZH_COMMIT_MSG:-0}" = "1" ]; then
+  allow_non_zh=1
+  log "检测到 HELIOS_ALLOW_NON_ZH_COMMIT_MSG=1，放宽中文提交校验。"
+fi
+
 subject="$(sed -n '1p' "${msg_file}" | tr -d '\r')"
 
 if echo "${subject}" | grep -Eq '^(Merge |fixup!|squash!|Revert ")'; then
@@ -34,6 +40,14 @@ fi
 if echo "${subject}" | grep -Eq '<(scope|summary)>'; then
   log "提交标题仍包含模板占位符，请填写后再提交。"
   exit 1
+fi
+
+if [ "${allow_non_zh}" -ne 1 ]; then
+  if ! echo "${subject}" | grep -P -q '[\x{4e00}-\x{9fff}]'; then
+    log "提交标题默认应使用中文（可保留必要英文术语）。"
+    log "如确需本次放宽，可临时设置：HELIOS_ALLOW_NON_ZH_COMMIT_MSG=1"
+    exit 1
+  fi
 fi
 
 required_headers=(
@@ -95,6 +109,17 @@ feature_mapping="$(clean_section "功能与文件映射:")"
 if ! echo "${feature_mapping}" | grep -Eq '^[[:space:]]*-[[:space:]]*[^:]+:[[:space:]]*.+$'; then
   log "“功能与文件映射:”段落格式不正确，需使用：- 功能: 文件列表"
   exit 1
+fi
+
+if [ "${allow_non_zh}" -ne 1 ]; then
+  for zh_header in "功能:" "主要改动:" "为什么改:"; do
+    zh_content="$(clean_section "${zh_header}")"
+    if ! echo "${zh_content}" | grep -P -q '[\x{4e00}-\x{9fff}]'; then
+      log "段落默认应包含中文描述：${zh_header}"
+      log "如确需本次放宽，可临时设置：HELIOS_ALLOW_NON_ZH_COMMIT_MSG=1"
+      exit 1
+    fi
+  done
 fi
 
 print_section() {
