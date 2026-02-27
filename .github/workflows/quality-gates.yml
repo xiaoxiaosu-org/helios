@@ -95,9 +95,17 @@ jobs:
           fi
 
       - name: Secrets scan (gitleaks)
-        uses: gitleaks/gitleaks-action@v2
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          # gitleaks-action@v2 requires a license key for organizations; run the OSS scanner via container instead.
+          # This remains a hard gate: any finding must fail the workflow.
+          docker run --rm \
+            -v "${PWD}:/repo" \
+            -w /repo \
+            ghcr.io/gitleaks/gitleaks:latest \
+            detect --source=/repo --redact
 
       - name: Block debug print statements in production code paths
         shell: bash
