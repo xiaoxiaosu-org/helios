@@ -22,6 +22,7 @@
 2) CI 门禁（防绕过）
 - `/.github/workflows/doc-check.yml`
 - `/.github/workflows/quality-gates.yml`
+- `/.github/workflows/governance-auto-sync.yml`（定时自动升级治理基线）
 
 3) 模板（结构化输入）
 - 提交模板：`/.github/commit_message_template.md`
@@ -59,8 +60,12 @@
 | 架构依赖方向门禁（CAP-004） | `quality-gates.yml` + `scripts/ci/arch-check.sh` + `scripts/ci/verify.sh` | 本文件 + `docs/02-架构/边界与依赖规则.md` + 执行计划（CAP-004） | CI 强制 + CAP 验收 |
 | 门禁自测回归（PR 校验鲁棒性） | `quality-gates.yml` + `scripts/ci/gate-selftest.sh` + `scripts/ci/verify.sh` | 本文件 + 执行计划（PR 校验鲁棒性） + 经验库（PR 校验鲁棒性） | CI 强制 + 本地 verify 强制 |
 | push 事件 diff 回退（before SHA 不可达） | `doc-check.yml` + `quality-gates.yml`（Compute changed files / commit range） | 本文件 + 经验库（PR 校验鲁棒性） | CI 容错（merge-base 回退） |
-| workflow map 文档联动门禁（触发路径必须同步文档） | `quality-gates.yml` + `scripts/ci/workflow-sync-check.sh` + `scripts/ci/verify.sh` | 本文件 + `docs/02-架构/执行计划/workflow-map.yaml` + `docs/02-架构/执行计划/工作流自动推进闭环.md` | CI 强制 + 本地 verify 强制 |
-| CAP 路线图状态与验收结果一致性门禁 | `quality-gates.yml` + `scripts/ci/cap-plan-sync-check.sh` + `scripts/ci/verify.sh` | 本文件 + `docs/02-架构/执行计划/active/PLAN-20260227-工程智能化路线图.md` | CI 强制 + 本地 verify 强制 |
+| workflow 文档联动门禁（backlog 唯一执行源） | `quality-gates.yml` + `scripts/ci/workflow-sync-check.sh` + `scripts/ci/verify.sh` | 本文件 + `docs/02-架构/执行计划/backlog.yaml` + `docs/02-架构/执行计划/工作流自动推进闭环.md` | CI 强制 + 本地 verify 强制 |
+| 计划模板一致性门禁（WorkItem 最小单元） | `quality-gates.yml` + `scripts/ci/plan-template-check.sh` + `scripts/ci/verify.sh` | 本文件 + `docs/02-架构/执行计划/PLAN-模板-WorkItem.md` | CI 强制 + 本地 verify 强制 |
+| backlog 主文件新鲜度门禁（防执行源漂移） | `quality-gates.yml` + `scripts/workflow/backlog.sh check` + `scripts/ci/verify.sh` | 本文件 + `docs/02-架构/执行计划/backlog.yaml` + `docs/02-架构/执行计划/工作流自动推进闭环.md` | CI 强制 + 本地 verify 强制 |
+| 治理版本锁门禁（role/source/manifest 基线校验） | `quality-gates.yml` + `scripts/ci/governance-lock-check.sh` + `scripts/governance/enforce-lock.sh` + `scripts/ci/verify.sh` | 本文件 + `docs/02-架构/工程治理/治理基线版本化与迁移.md` | CI 强制 + 本地 verify 强制 |
+| 治理基线上游自动升级（非人工提醒） | `.github/workflows/governance-auto-sync.yml` + `scripts/governance/check-release.sh` + `scripts/governance/sync-baseline.sh` | 本文件 + `docs/02-架构/工程治理/治理基线版本化与迁移.md` | schedule + 自动 PR |
+| CAP 路线图状态与验收结果一致性门禁 | `quality-gates.yml` + `scripts/ci/cap-plan-sync-check.sh` + `scripts/ci/verify.sh` | 本文件 + `docs/02-架构/执行计划/active/PLAN-20260227-01-工程智能化路线图.md` | CI 强制 + 本地 verify 强制 |
 | 质量评分自动汇总同步门禁 | `quality-gates.yml` + `scripts/docs/update-quality-score.sh` + `scripts/ci/verify.sh` | 本文件 + `docs/02-架构/质量评分与演进.md` | CI 强制 + 本地 verify 强制 |
 | 技术债定时巡检（治理持续化） | `.github/workflows/tech-debt-sweep.yml` + `scripts/ci/tech-debt-governance-check.sh` + `scripts/ci/workflow-sync-check.sh` | 本文件 + 执行计划工作流手册 | schedule + 手动触发 |
 | 文档园艺定时巡检（断链/索引完整性） | `.github/workflows/doc-gardening.yml` + `scripts/docs/gardening.sh` | 本文件 + `docs/02-架构/质量评分与演进.md` | schedule + 手动触发 |
@@ -79,8 +84,12 @@
 - hooks 名称与职责
 - 关键本地脚本（`scripts/docs/index-check.sh` / `scripts/docs/rule-files-check.sh` / `scripts/docs/git-governance-sync-check.sh` / `scripts/ci/verify.sh`）
 - 门禁自测脚本（`scripts/ci/gate-selftest.sh`）
+- 计划模板一致性脚本（`scripts/ci/plan-template-check.sh`）
 - CAP 状态一致性脚本（`scripts/ci/cap-plan-sync-check.sh`）
 - 质量评分自动汇总脚本（`scripts/docs/update-quality-score.sh`）
+- backlog 新鲜度校验（`scripts/workflow/backlog.sh check`）
+- 治理版本锁校验脚本（`scripts/ci/governance-lock-check.sh` / `scripts/governance/enforce-lock.sh`）
+- 治理基线同步脚本（`scripts/governance/sync-baseline.sh`）
 - CAP 验收入口（`scripts/cap/verify.sh CAP-00X`）
 - 临时放宽变量（`HELIOS_ALLOW_COMMIT_MAIN`、`HELIOS_ALLOW_RELAXED_COMMIT_MSG`、`HELIOS_ALLOW_PUSH_MAIN`）
 - 中文提交放宽变量（`HELIOS_ALLOW_NON_ZH_COMMIT_MSG`）
@@ -123,10 +132,17 @@ CI 触发范围（`doc-check` 会直接阻断）：
 - `.githooks/*`
 - `.github/workflows/doc-check.yml`
 - `.github/workflows/quality-gates.yml`
+- `.github/workflows/governance-auto-sync.yml`
 - `.github/commit_message_template.md`
 - `.github/pull_request_template.md`（含大写模板名）
 - `scripts/dev/install-git-hooks.sh`
 - `scripts/docs/git-governance-sync-check.sh`
+- `scripts/ci/plan-template-check.sh`
+- `scripts/ci/governance-lock-check.sh`
+- `scripts/governance/*.sh`
+- `scripts/workflow/backlog.sh`
+- `governance.lock`
+- `governance/baseline/manifest.txt`
 - `AGENTS.md`
 - `docs/02-架构/工程治理/工程治理与门禁.md`
 - `docs/02-架构/工程治理/分支与门禁落地.md`

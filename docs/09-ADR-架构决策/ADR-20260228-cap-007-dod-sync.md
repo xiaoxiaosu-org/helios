@@ -11,7 +11,7 @@ Accepted
 - 执行计划中的 CAP-007 DoD 仍停留在“文档存在 + 至少一条 TD 记录”，与实际门禁口径不一致。
 
 ## 决策
-- 更新 `docs/02-架构/执行计划/active/PLAN-20260227-工程智能化路线图.md` 的 CAP-007 DoD。
+- 更新 `docs/02-架构/执行计划/active/PLAN-20260227-01-工程智能化路线图.md` 的 CAP-007 DoD。
 - 将关键字段要求（`Owner`、`最近更新`、`验收标准`）与状态合法性要求（`Open|In Progress|Blocked|Done`）纳入 DoD 描述。
 - 保持验收入口不变，继续通过 `scripts/cap/verify.sh CAP-007` 机械验证。
 

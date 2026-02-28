@@ -6,25 +6,32 @@ repo_root="$(cd "${here}/../.." && pwd)"
 cd "${repo_root}"
 source "${here}/_lib.sh"
 
-td_id="${1:-}"
-[ -n "${td_id}" ] || { wf_help; exit 1; }
-WF_TD_ID="${td_id}"
+input_id="${1:-}"
+[ -n "${input_id}" ] || { wf_help; exit 1; }
+work_item_id="$(wf_resolve_work_item_id "${input_id}" || true)"
+[ -n "${work_item_id}" ] || {
+  wf_log "WorkItem 不存在或编号非法（要求 WI-PLANYYYYMMDDNN-NN）：${input_id}" >&2
+  exit 1
+}
+WF_WORK_ITEM_ID="${work_item_id}"
 
-wf_ensure_map_exists
-cap_id="$(wf_get_field "${td_id}" cap_id || true)"
-branch_prefix="$(wf_get_field "${td_id}" branch_prefix || true)"
-acceptance_cmds="$(wf_get_field "${td_id}" acceptance_cmds || true)"
-required_docs="$(wf_get_field "${td_id}" required_docs || true)"
-tech_debt_file="$(awk -F': ' '/^[[:space:]]*tech_debt_file:/ {print $2; exit}' "$(wf_map_file)")"
+wf_ensure_backlog_exists
+status="$(wf_get_field "${work_item_id}" status || echo "todo")"
+branch_prefix="$(wf_get_field "${work_item_id}" branch_prefix || true)"
+required_docs="$(wf_get_field "${work_item_id}" required_docs || true)"
+acceptance_cmds="$(wf_get_field "${work_item_id}" acceptance_cmds || true)"
+legacy_id="$(wf_get_field "${work_item_id}" legacy_id || true)"
 
-if [ -z "${cap_id}" ] || [ -z "${branch_prefix}" ]; then
-  wf_log "未在 workflow-map 中找到条目：${td_id}" >&2
+if [ "${status}" = "done" ]; then
+  wf_log "当前 WorkItem 已是 done，禁止重复启动：${work_item_id}" >&2
   exit 1
 fi
 
-branch_name="${branch_prefix}-$(date -u +%Y%m%d)"
+wf_append_event "${work_item_id}" "workflow.start.requested" "running" "启动工作流：${work_item_id}" "{}"
+
 current_branch="$(git branch --show-current)"
-if [ "${current_branch}" = "main" ]; then
+if [ -n "${branch_prefix}" ] && [ "${current_branch}" = "main" ]; then
+  branch_name="${branch_prefix}-$(date -u +%Y%m%d)"
   git checkout -b "${branch_name}"
   wf_log "已从 main 创建工作分支：${branch_name}"
 else
@@ -32,14 +39,16 @@ else
 fi
 
 today="$(wf_now_date)"
-wf_update_td_open_row "${td_id}" "In Progress" "${today}" "工作流已启动（${today}）" "${tech_debt_file}"
+wf_update_work_item_status "${work_item_id}" "in_progress" "${today}" "工作流已启动（${today}）"
 
-out_dir="$(wf_artifact_dir "${td_id}")"
+out_dir="$(wf_artifact_dir "${work_item_id}")"
+WF_RUN_DIR="${out_dir}"
+export WF_RUN_DIR
 {
   echo "# Workflow Start Checklist"
   echo
-  echo "- TD: ${td_id}"
-  echo "- CAP: ${cap_id}"
+  echo "- WorkItem: ${work_item_id}"
+  echo "- Legacy: ${legacy_id:--}"
   echo "- Date: ${today}"
   echo "- Branch: $(git branch --show-current)"
   echo
@@ -58,7 +67,7 @@ out_dir="$(wf_artifact_dir "${td_id}")"
   done
 } > "${out_dir}/checklist.md"
 
-wf_log "启动完成：${td_id}"
-wf_log "已更新技术债状态为 In Progress：${tech_debt_file}"
+wf_log "启动完成：${work_item_id}"
 wf_log "检查清单：${out_dir}/checklist.md"
-wf_log "下一步：scripts/workflow/progress.sh ${td_id}"
+wf_log "下一步：scripts/workflow/progress.sh ${work_item_id}"
+wf_append_event "${work_item_id}" "workflow.start.completed" "pass" "启动完成" "{\"checklist\":\"${out_dir}/checklist.md\",\"branch\":\"$(git branch --show-current)\"}"

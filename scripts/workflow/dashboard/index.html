@@ -495,7 +495,7 @@
     <main class="page">
       <section class="hero">
         <h1 class="title">HELIOS 仓库总览控制台</h1>
-        <p class="subtitle">按 docs/00-09 结构展示文档地图，并联动校验、工作项与执行入口。</p>
+        <p class="subtitle">按 docs/00-09 结构展示文档地图，并联动计划推进、门禁校验与 WorkItem 执行入口。</p>
         <div class="hero-meta">
           <span class="pill">Branch: <strong id="branch">-</strong></span>
           <span class="pill">HEAD: <strong id="head">-</strong></span>
@@ -514,12 +514,12 @@
           <div class="value" id="task-count">0</div>
         </article>
         <article class="card">
-          <div class="label">在制 TD</div>
-          <div class="value" id="td-open">0</div>
+          <div class="label">进行中 WorkItem</div>
+          <div class="value" id="inprogress-count">0</div>
         </article>
         <article class="card">
-          <div class="label">CAP 待完成</div>
-          <div class="value" id="cap-pending">0</div>
+          <div class="label">阻塞 WorkItem</div>
+          <div class="value" id="blocked-count">0</div>
         </article>
         <article class="card">
           <div class="label">文档校验规则</div>
@@ -546,8 +546,9 @@
             <span class="tag warn" id="task-summary">执行任务 -</span>
             <span class="tag" id="repo-task-summary">仓库任务 -</span>
             <span class="tag" id="workitem-summary">WorkItem -</span>
-            <span class="tag" id="td-open-summary">TD -</span>
-            <span class="tag" id="cap-summary">CAP -</span>
+            <span class="tag" id="progress-summary">进行中 -</span>
+            <span class="tag" id="blocked-summary">阻塞 -</span>
+            <span class="tag" id="plan-summary">Plan -</span>
           </div>
 
           <div class="todo-grid">
@@ -581,36 +582,37 @@
 
             <div class="todo-split">
               <div class="todo-block table-wrap">
-                <h3>在制 TD</h3>
+                <h3>重点 WorkItem（未完成）</h3>
                 <table>
                   <thead>
                     <tr>
-                      <th>TD</th>
+                      <th>WorkItem</th>
+                      <th>Plan</th>
                       <th>标题</th>
                       <th>状态</th>
                       <th>优先级</th>
-                      <th>CAP</th>
                       <th>最近更新</th>
                       <th>最近报告</th>
                       <th>操作</th>
                     </tr>
                   </thead>
-                  <tbody id="td-open-body"></tbody>
+                  <tbody id="focus-workitem-body"></tbody>
                 </table>
               </div>
               <div class="todo-block table-wrap">
-                <h3>CAP 路线图状态</h3>
+                <h3>Plan 进度</h3>
                 <table>
                   <thead>
                     <tr>
-                      <th>CAP</th>
-                      <th>状态</th>
-                      <th>关联 TD</th>
-                      <th>能力</th>
-                      <th>操作</th>
+                      <th>Plan</th>
+                      <th>完成率</th>
+                      <th>Done</th>
+                      <th>进行中</th>
+                      <th>阻塞</th>
+                      <th>待办</th>
                     </tr>
                   </thead>
-                  <tbody id="cap-body"></tbody>
+                  <tbody id="plan-body"></tbody>
                 </table>
               </div>
             </div>
@@ -709,9 +711,9 @@
       }
 
       function badgeClass(value) {
-        if (value === "Done" || value === "PASS" || value === "干净") return "tag ok";
-        if (value === "Blocked" || value === "In Progress" || value === "有改动") return "tag warn";
-        if (value === "FAIL") return "tag fail";
+        if (value === "done" || value === "Done" || value === "PASS" || value === "干净") return "tag ok";
+        if (value === "blocked" || value === "in_progress" || value === "Blocked" || value === "In Progress" || value === "有改动") return "tag warn";
+        if (value === "FAIL" || value === "failed") return "tag fail";
         return "tag";
       }
 
@@ -777,15 +779,16 @@
         setText("branch", data.repo.branch);
         setText("head", data.repo.head);
         setText("generated-at", data.generatedAt);
-        setText("td-open", String(data.summary.tdOpenCount));
-        setText("cap-pending", String(data.summary.capPendingCount));
+        setText("inprogress-count", String(data.summary.inProgressCount));
+        setText("blocked-count", String(data.summary.blockedCount));
         setText("task-count", String(data.summary.todoTaskCount || data.summary.pendingTaskCount || 0));
         setText("doc-rule-count", String(data.summary.docRuleCount || 0));
         setText("todo-summary", `总计 ${data.summary.todoTaskCount || 0} 项`);
         setText("task-summary", `总计 ${data.summary.pendingTaskCount} 项`);
         setText("repo-task-summary", `总计 ${data.summary.repoTaskCount || 0} 项`);
-        setText("td-open-summary", `${data.summary.tdOpenCount} 项`);
-        setText("cap-summary", `${data.summary.capDoneCount}/${data.summary.capTotalCount} Done`);
+        setText("progress-summary", `${data.summary.inProgressCount} 项`);
+        setText("blocked-summary", `${data.summary.blockedCount} 项`);
+        setText("plan-summary", `${data.summary.planCount} 个`);
         setText("workitem-summary", `${(data.workItems || []).length} 项`);
         setText("dirty-summary", data.repo.isDirty ? `有改动 (${data.repo.changedCount})` : "干净");
         const dirtyEl = document.getElementById("dirty-summary");
@@ -803,13 +806,10 @@
         body.innerHTML = items
           .map((item) => {
             const statusClass = badgeClass(item.status);
-            const links =
-              item.kind === "debt"
-                ? (item.links?.capabilityIds || []).join(", ") || "-"
-                : (item.links?.debtIds || []).join(", ") || "-";
+            const links = (item.links?.dependsOnWorkItems || []).join(", ") || "-";
             return `
               <tr>
-                <td>${escapeHtml(item.id)}</td>
+                <td>${escapeHtml(item.workItemId || "-")}</td>
                 <td>${escapeHtml(item.kind)}</td>
                 <td><span class="${statusClass}">${escapeHtml(item.status)}</span></td>
                 <td>${escapeHtml(item.title || "-")}</td>
@@ -929,22 +929,20 @@
 
         root.innerHTML = tasks
           .map((task) => {
-            const canRun = task.action && task.action !== "command.copy_only";
+            const canRun = Boolean(task.action);
             const btn = canRun
               ? `<button class="primary run-task-btn" data-action="${escapeHtml(
                   task.action
-                )}" data-td="${escapeHtml(task.params?.tdId || "")}" data-cap="${escapeHtml(
-                  task.params?.capId || ""
-                )}">执行</button>`
+                )}" data-wi="${escapeHtml(task.params?.workItemId || "")}">执行</button>`
               : `<button class="ghost copy-task-btn" data-command="${escapeHtml(task.command)}">复制命令</button>`;
             return `
               <div class="task-item">
                 <div>
                   <strong>${escapeHtml(task.title)}</strong>
                   <div class="task-meta">${escapeHtml(task.reason || "")}</div>
-                  <div class="task-meta">优先级: ${escapeHtml(task.priority || "-")} | TD: ${escapeHtml(
-                    task.relatedTd || "-"
-                  )} | CAP: ${escapeHtml(task.relatedCap || "-")}</div>
+                  <div class="task-meta">优先级: ${escapeHtml(task.priority || "-")} | Plan: ${escapeHtml(
+                    task.relatedPlan || "-"
+                  )} | WorkItem: ${escapeHtml(task.relatedWorkItem || "-")}</div>
                   <div class="task-command">${escapeHtml(task.command || "-")}</div>
                 </div>
                 <div>${btn}</div>
@@ -963,13 +961,11 @@
         }
         root.innerHTML = tasks
           .map((task) => {
-            const canRun = task.action && task.action !== "command.copy_only";
+            const canRun = Boolean(task.action);
             const btn = canRun
               ? `<button class="primary run-task-btn" data-action="${escapeHtml(
                   task.action
-                )}" data-td="${escapeHtml(task.params?.tdId || "")}" data-cap="${escapeHtml(
-                  task.params?.capId || ""
-                )}">执行</button>`
+                )}" data-wi="${escapeHtml(task.params?.workItemId || "")}">执行</button>`
               : `<button class="ghost copy-task-btn" data-command="${escapeHtml(task.command)}">复制命令</button>`;
             return `
               <div class="task-item">
@@ -1062,10 +1058,10 @@
         `;
       }
 
-      function renderTdOpen(rows) {
-        const body = document.getElementById("td-open-body");
+      function renderFocusWorkItems(rows) {
+        const body = document.getElementById("focus-workitem-body");
         if (!rows.length) {
-          body.innerHTML = '<tr><td colspan="8"><div class="empty">无在制 TD。</div></td></tr>';
+          body.innerHTML = '<tr><td colspan="8"><div class="empty">无未完成 WorkItem。</div></td></tr>';
           return;
         }
         body.innerHTML = rows
@@ -1076,26 +1072,26 @@
             const statusClass = badgeClass(row.status);
             return `
               <tr>
-                <td>${escapeHtml(row.id)}</td>
+                <td>${escapeHtml(row.workItemId || "-")}</td>
+                <td>${escapeHtml(row.planId || "-")}</td>
                 <td>${escapeHtml(row.title)}</td>
                 <td><span class="${statusClass}">${escapeHtml(row.status)}</span></td>
                 <td>${escapeHtml(row.priority)}</td>
-                <td>${escapeHtml(row.capId)} (${escapeHtml(row.capStatus || "-")})</td>
                 <td>${escapeHtml(row.lastUpdate)}</td>
                 <td>${escapeHtml(run)}</td>
                 <td>
                   <div class="inline-actions">
-                    <button class="ghost td-action-btn" data-action="workflow.start" data-td="${escapeHtml(
-                      row.id
+                    <button class="ghost wi-action-btn" data-action="workflow.start" data-wi="${escapeHtml(
+                      row.workItemId
                     )}">start</button>
-                    <button class="ghost td-action-btn" data-action="workflow.progress" data-td="${escapeHtml(
-                      row.id
+                    <button class="ghost wi-action-btn" data-action="workflow.progress" data-wi="${escapeHtml(
+                      row.workItemId
                     )}">progress</button>
-                    <button class="ghost td-action-btn" data-action="workflow.close" data-td="${escapeHtml(
-                      row.id
+                    <button class="ghost wi-action-btn" data-action="workflow.close" data-wi="${escapeHtml(
+                      row.workItemId
                     )}">close</button>
-                    <button class="secondary td-action-btn" data-action="workflow.full" data-td="${escapeHtml(
-                      row.id
+                    <button class="secondary wi-action-btn" data-action="workflow.full" data-wi="${escapeHtml(
+                      row.workItemId
                     )}">full</button>
                   </div>
                 </td>
@@ -1105,28 +1101,22 @@
           .join("");
       }
 
-      function renderCaps(rows) {
-        const body = document.getElementById("cap-body");
+      function renderPlans(rows) {
+        const body = document.getElementById("plan-body");
         if (!rows.length) {
-          body.innerHTML = '<tr><td colspan="5"><div class="empty">无 CAP 数据。</div></td></tr>';
+          body.innerHTML = '<tr><td colspan="6"><div class="empty">无 Plan 数据。</div></td></tr>';
           return;
         }
         body.innerHTML = rows
-          .map((cap) => {
-            const statusClass = badgeClass(cap.status);
-            const button =
-              cap.status === "Done"
-                ? '<span class="tag ok">无需执行</span>'
-                : `<button class="ghost cap-action-btn" data-cap="${escapeHtml(
-                    cap.id
-                  )}">verify</button>`;
+          .map((plan) => {
             return `
               <tr>
-                <td>${escapeHtml(cap.id)}</td>
-                <td><span class="${statusClass}">${escapeHtml(cap.status)}</span></td>
-                <td>${escapeHtml(cap.tdId || "-")}</td>
-                <td>${escapeHtml(cap.ability || "-")}</td>
-                <td>${button}</td>
+                <td>${escapeHtml(plan.planId)}</td>
+                <td>${escapeHtml(plan.completion)}%</td>
+                <td>${escapeHtml(plan.done)}</td>
+                <td>${escapeHtml(plan.in_progress)}</td>
+                <td>${escapeHtml(plan.blocked)}</td>
+                <td>${escapeHtml(plan.todo)}</td>
               </tr>
             `;
           })
@@ -1159,28 +1149,22 @@
         renderTasks(data.pendingTasks || []);
         renderRepoTasks(data.repoTasks || []);
         renderWorkItems(data.workItems || []);
-        renderTdOpen(data.td?.open || []);
-        renderCaps(data.caps || []);
+        renderFocusWorkItems(data.focusWorkItems || []);
+        renderPlans(data.plans || []);
         renderDirty(data.repo?.changedFiles || []);
         wireActions();
       }
 
       function wireActions() {
-        document.querySelectorAll(".td-action-btn").forEach((btn) => {
+        document.querySelectorAll(".wi-action-btn").forEach((btn) => {
           btn.addEventListener("click", async () => {
-            await postAction(btn.dataset.action, { tdId: btn.dataset.td });
-          });
-        });
-        document.querySelectorAll(".cap-action-btn").forEach((btn) => {
-          btn.addEventListener("click", async () => {
-            await postAction("cap.verify", { capId: btn.dataset.cap });
+            await postAction(btn.dataset.action, { workItemId: btn.dataset.wi });
           });
         });
         document.querySelectorAll(".run-task-btn").forEach((btn) => {
           btn.addEventListener("click", async () => {
             const params = {};
-            if (btn.dataset.td) params.tdId = btn.dataset.td;
-            if (btn.dataset.cap) params.capId = btn.dataset.cap;
+            if (btn.dataset.wi) params.workItemId = btn.dataset.wi;
             await postAction(btn.dataset.action, params);
           });
         });

@@ -1,0 +1,96 @@
+name: Governance Auto Sync
+
+on:
+  schedule:
+    - cron: "23 2 * * *"
+  workflow_dispatch:
+
+jobs:
+  auto-sync:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check governance upstream release
+        id: check_release
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p artifacts/ci/governance
+          scripts/governance/check-release.sh --out artifacts/ci/governance/release.env
+          cat artifacts/ci/governance/release.env
+
+          source artifacts/ci/governance/release.env
+          echo "update_available=${UPDATE_AVAILABLE}" >> "$GITHUB_OUTPUT"
+          echo "latest_commit=${LATEST_COMMIT}" >> "$GITHUB_OUTPUT"
+
+      - name: Sync governance baseline
+        if: steps.check_release.outputs.update_available == '1'
+        shell: bash
+        run: |
+          set -euo pipefail
+          source artifacts/ci/governance/release.env
+          scripts/governance/sync-baseline.sh \
+            --target . \
+            --source-repo "${SOURCE_REPO}" \
+            --source-ref "${SOURCE_REF}" \
+            --role consumer \
+            --force
+
+      - name: Create pull request for governance sync
+        if: steps.check_release.outputs.update_available == '1'
+        uses: peter-evans/create-pull-request@v6
+        with:
+          branch: chore/governance-auto-sync-${{ steps.check_release.outputs.latest_commit }}
+          delete-branch: true
+          title: "chore(governance): 同步治理基线到 ${{ steps.check_release.outputs.latest_commit }}"
+          commit-message: "chore(governance): 自动同步治理基线"
+          body: |
+            ## 变更摘要（Summary）
+
+            - 背景：治理基线上游检测到新提交，自动同步到当前仓库
+            - 改了什么：更新 governance.lock 与受管治理文件
+            - 影响范围：`.githooks/`、`.github/workflows/`、`scripts/ci|docs|governance/`、治理文档
+
+            ## 变更类型（Type）
+
+            - [ ] Feature
+            - [ ] Bugfix
+            - [ ] Refactor
+            - [x] Docs
+            - [x] Chore
+
+            ## 功能清单（Features）
+
+            - 功能 1：治理基线自动升级
+
+            ## 功能与文件映射（Feature-File Mapping）
+
+            - 自动升级: governance.lock, governance/baseline/manifest.txt, scripts/governance/*
+
+            ## 改动原因（Why）
+
+            - 技术原因：降低人工提醒依赖，持续保持治理能力与上游基线一致
+
+            ## 主要改动（What Changed）
+
+            - 执行 `scripts/governance/sync-baseline.sh` 覆盖受管文件并更新锁版本
+
+            ## 验证（Verification）
+
+            - [x] 本地通过：`scripts/ci/verify.sh`
+            - 关键验证结果：由 PR CI 给出
+
+            ## docs / ADR（系统记录）
+
+            - [x] 已按“你改了什么，就去哪里补档”更新 `docs/`（如适用）
+            - [ ] 若为关键变更：已新增或更新 ADR（`docs/09-ADR-架构决策/`），并更新索引
+            - [x] 若涉及 Git 门禁/CI/模板规则高风险变更：已更新 `docs/02-架构/工程治理/经验库/`
+            - [ ] 若未更新经验库：已填写“经验库豁免说明”与“补齐截止日期（<=T+1日）”
+            - 经验库豁免说明：
+            - 补齐截止日期（YYYY-MM-DD，<=T+1日）：
