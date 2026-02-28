@@ -8,3 +8,4 @@
 - [ADR-20260228-cap-004-experience-backfill](./ADR-20260228-cap-004-experience-backfill.md): CAP-004 经验库补齐策略
 - [ADR-20260228-cap-004-arch-boundary-gate](./ADR-20260228-cap-004-arch-boundary-gate.md): CAP-004 架构边界依赖门禁落地
 - [ADR-20260228-cap-007-tech-debt-tracker](./ADR-20260228-cap-007-tech-debt-tracker.md): CAP-007 技术债追踪机制落地
+- [ADR-20260228-cap-007-dod-sync](./ADR-20260228-cap-007-dod-sync.md): CAP-007 DoD 口径同步到执行计划
