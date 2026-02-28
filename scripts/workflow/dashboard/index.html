@@ -1,0 +1,1260 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>HELIOS 仓库总览控制台</title>
+    <style>
+      :root {
+        --bg-0: #f5f1e8;
+        --bg-1: #efe7da;
+        --panel: #fffdf8;
+        --text: #1e2b2b;
+        --muted: #5f6d6d;
+        --accent: #006d5b;
+        --accent-2: #b24f2e;
+        --warn: #9b5d00;
+        --ok: #13795b;
+        --danger: #9f2f25;
+        --border: #d8ccba;
+        --shadow: 0 12px 28px rgba(53, 40, 24, 0.11);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        color: var(--text);
+        background:
+          radial-gradient(circle at 12% 14%, rgba(0, 109, 91, 0.2), transparent 44%),
+          radial-gradient(circle at 88% 10%, rgba(178, 79, 46, 0.17), transparent 40%),
+          linear-gradient(170deg, var(--bg-0), var(--bg-1));
+        font-family: "Space Grotesk", "Noto Sans SC", "PingFang SC", sans-serif;
+      }
+
+      .page {
+        max-width: 1240px;
+        margin: 0 auto;
+        padding: 28px 18px 56px;
+      }
+
+      .hero {
+        border: 1px solid var(--border);
+        border-radius: 18px;
+        padding: 18px 18px 20px;
+        background: linear-gradient(120deg, #fffdfa, #f7efe0);
+        box-shadow: var(--shadow);
+      }
+
+      .title {
+        margin: 0;
+        font-size: clamp(1.6rem, 2.2vw, 2.1rem);
+        letter-spacing: 0.02em;
+      }
+
+      .subtitle {
+        margin: 8px 0 14px;
+        color: var(--muted);
+        font-size: 0.96rem;
+      }
+
+      .hero-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+      }
+
+      .pill {
+        border: 1px solid var(--border);
+        border-radius: 999px;
+        padding: 6px 10px;
+        font-size: 0.84rem;
+        background: #fff;
+      }
+
+      .actions {
+        margin-top: 14px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+      }
+
+      button {
+        appearance: none;
+        border: none;
+        border-radius: 12px;
+        padding: 10px 14px;
+        font-size: 0.9rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: transform 0.18s ease, filter 0.18s ease;
+      }
+
+      button:hover {
+        transform: translateY(-1px);
+        filter: brightness(1.03);
+      }
+
+      button.primary {
+        color: #fff;
+        background: linear-gradient(135deg, #007660, #005d4d);
+      }
+
+      button.secondary {
+        color: #fff;
+        background: linear-gradient(135deg, #ba5b3a, #9f4628);
+      }
+
+      button.ghost {
+        color: var(--text);
+        border: 1px solid var(--border);
+        background: #fff;
+      }
+
+      .grid {
+        margin-top: 16px;
+        display: grid;
+        grid-template-columns: repeat(12, minmax(0, 1fr));
+        gap: 12px;
+      }
+
+      .card {
+        grid-column: span 3;
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        padding: 12px 14px;
+        background: var(--panel);
+        box-shadow: var(--shadow);
+        animation: enter 0.45s ease both;
+      }
+
+      .card .label {
+        color: var(--muted);
+        font-size: 0.84rem;
+      }
+
+      .card .value {
+        margin-top: 6px;
+        font-size: 1.5rem;
+        font-weight: 700;
+      }
+
+      .section {
+        margin-top: 18px;
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        background: var(--panel);
+        box-shadow: var(--shadow);
+        overflow: hidden;
+        animation: enter 0.5s ease both;
+      }
+
+      .section-head {
+        padding: 12px 14px;
+        border-bottom: 1px solid var(--border);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+        background: #fff8ec;
+      }
+
+      .section-head h2 {
+        margin: 0;
+        font-size: 1rem;
+      }
+
+      .section-body {
+        padding: 12px 14px 14px;
+      }
+
+      .task-list {
+        display: grid;
+        gap: 8px;
+      }
+
+      .todo-grid {
+        display: grid;
+        gap: 12px;
+      }
+
+      .todo-split {
+        display: grid;
+        gap: 12px;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .todo-block {
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        background: #fffefb;
+        padding: 10px;
+      }
+
+      .todo-block h3 {
+        margin: 0 0 8px;
+        font-size: 0.95rem;
+      }
+
+      .todo-inline {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-bottom: 10px;
+      }
+
+      .module-actions {
+        display: grid;
+        gap: 8px;
+        margin-bottom: 12px;
+      }
+
+      .module-card {
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        padding: 8px 10px;
+        background: #fffdf9;
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 8px;
+        align-items: center;
+      }
+
+      .module-meta {
+        font-size: 0.8rem;
+        color: var(--muted);
+        margin-top: 3px;
+      }
+
+      .rule-list {
+        display: grid;
+        gap: 8px;
+      }
+
+      .rule-card {
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        padding: 10px;
+        background: #fffdf9;
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 8px;
+      }
+
+      .rule-meta {
+        margin-top: 4px;
+        font-size: 0.8rem;
+        color: var(--muted);
+      }
+
+      .tab-nav {
+        margin-top: 16px;
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        background: #fff8ee;
+        padding: 10px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        position: sticky;
+        top: 8px;
+        z-index: 30;
+        box-shadow: var(--shadow);
+      }
+
+      .tab-btn {
+        border: 1px solid var(--border);
+        background: #fff;
+        color: var(--text);
+        border-radius: 999px;
+        padding: 8px 12px;
+        font-size: 0.84rem;
+      }
+
+      .tab-btn.active {
+        color: #fff;
+        border-color: #0b6b5b;
+        background: linear-gradient(135deg, #0b7f6a, #005a4a);
+      }
+
+      .docs-domain-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 8px;
+        margin-bottom: 12px;
+      }
+
+      .domain-group {
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        background: #fffefb;
+        margin-bottom: 10px;
+        overflow: hidden;
+      }
+
+      .domain-group-title {
+        padding: 10px 12px;
+        background: #f8f0e4;
+        font-weight: 700;
+        font-size: 0.9rem;
+      }
+
+      .domain-group-body {
+        padding: 10px;
+      }
+
+      .domain-card {
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        background: #fffdfa;
+        padding: 9px 10px;
+      }
+
+      .domain-title {
+        font-size: 0.88rem;
+        font-weight: 700;
+      }
+
+      .domain-path {
+        margin-top: 2px;
+        color: var(--muted);
+        font-size: 0.78rem;
+      }
+
+      .domain-metrics {
+        margin-top: 6px;
+        font-size: 0.8rem;
+        color: var(--muted);
+      }
+
+      .doc-list {
+        display: grid;
+        gap: 6px;
+      }
+
+      .doc-item {
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        padding: 7px 9px;
+        background: #fffaf3;
+        font-size: 0.83rem;
+      }
+
+      .task-item {
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        padding: 9px 10px;
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 10px;
+        background: #fffdfa;
+      }
+
+      .task-meta {
+        font-size: 0.82rem;
+        color: var(--muted);
+        margin-top: 4px;
+      }
+
+      .task-command {
+        margin-top: 5px;
+        font-family: "IBM Plex Mono", "SFMono-Regular", ui-monospace, monospace;
+        font-size: 0.8rem;
+        color: #16453f;
+        background: #ecf8f4;
+        border-radius: 7px;
+        padding: 5px 7px;
+        display: inline-block;
+      }
+
+      .table-wrap {
+        overflow-x: auto;
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        min-width: 760px;
+      }
+
+      th,
+      td {
+        text-align: left;
+        border-bottom: 1px solid #eadfce;
+        padding: 8px 6px;
+        font-size: 0.86rem;
+        vertical-align: top;
+      }
+
+      th {
+        color: var(--muted);
+        font-weight: 600;
+      }
+
+      .tag {
+        display: inline-block;
+        border-radius: 999px;
+        padding: 3px 8px;
+        font-size: 0.75rem;
+        border: 1px solid var(--border);
+        background: #fff;
+      }
+
+      .tag.ok {
+        border-color: #8ac8b2;
+        color: #0b5f47;
+        background: #ebfaf4;
+      }
+
+      .tag.warn {
+        border-color: #e3be82;
+        color: #815100;
+        background: #fff7e7;
+      }
+
+      .tag.fail {
+        border-color: #df9d9a;
+        color: #8a2f28;
+        background: #fff0ef;
+      }
+
+      .inline-actions {
+        display: flex;
+        gap: 6px;
+        flex-wrap: wrap;
+      }
+
+      .inline-actions button {
+        padding: 6px 9px;
+        font-size: 0.78rem;
+      }
+
+      .log-box {
+        background: #14201f;
+        color: #b6dbcf;
+        border-radius: 11px;
+        padding: 12px;
+        min-height: 180px;
+        font-size: 0.8rem;
+        font-family: "IBM Plex Mono", "SFMono-Regular", ui-monospace, monospace;
+        white-space: pre-wrap;
+        overflow-wrap: anywhere;
+      }
+
+      .empty {
+        padding: 12px;
+        border: 1px dashed var(--border);
+        border-radius: 10px;
+        color: var(--muted);
+      }
+
+      .panel-hidden {
+        display: none !important;
+      }
+
+      @keyframes enter {
+        from {
+          opacity: 0;
+          transform: translateY(8px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      @media (max-width: 900px) {
+        .card {
+          grid-column: span 6;
+        }
+
+        .todo-split {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      @media (max-width: 640px) {
+        .page {
+          padding: 16px 10px 40px;
+        }
+
+        .hero {
+          padding: 14px;
+        }
+
+        .card {
+          grid-column: span 12;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="page">
+      <section class="hero">
+        <h1 class="title">HELIOS 仓库总览控制台</h1>
+        <p class="subtitle">按 docs/00-09 结构展示文档地图，并联动校验、工作项与执行入口。</p>
+        <div class="hero-meta">
+          <span class="pill">Branch: <strong id="branch">-</strong></span>
+          <span class="pill">HEAD: <strong id="head">-</strong></span>
+          <span class="pill">Generated: <strong id="generated-at">-</strong></span>
+        </div>
+        <div class="actions">
+          <button class="primary" id="refresh-btn" type="button">刷新状态</button>
+          <button class="secondary" id="verify-btn" type="button">执行 CI 门禁</button>
+          <button class="ghost" id="autorefresh-btn" type="button">自动刷新：开</button>
+        </div>
+      </section>
+
+      <section class="grid">
+        <article class="card">
+          <div class="label">待办中心任务</div>
+          <div class="value" id="task-count">0</div>
+        </article>
+        <article class="card">
+          <div class="label">在制 TD</div>
+          <div class="value" id="td-open">0</div>
+        </article>
+        <article class="card">
+          <div class="label">CAP 待完成</div>
+          <div class="value" id="cap-pending">0</div>
+        </article>
+        <article class="card">
+          <div class="label">文档校验规则</div>
+          <div class="value" id="doc-rule-count">0</div>
+        </article>
+      </section>
+
+      <nav class="tab-nav" id="tab-nav">
+        <button class="tab-btn active" data-tab="todo-hub" type="button">待办中心</button>
+        <button class="tab-btn" data-tab="rules-hub" type="button">规则测试台</button>
+        <button class="tab-btn" data-tab="docs-structure" type="button">文档结构</button>
+        <button class="tab-btn" data-tab="experience-hub" type="button">经验库</button>
+        <button class="tab-btn" data-tab="dirty" type="button">工作区变更</button>
+        <button class="tab-btn" data-tab="action" type="button">动作输出</button>
+      </nav>
+
+      <section class="section" data-panel="todo-hub">
+        <div class="section-head">
+          <h2>待办中心（统一视图）</h2>
+          <span class="tag warn" id="todo-summary">-</span>
+        </div>
+        <div class="section-body">
+          <div class="todo-inline">
+            <span class="tag warn" id="task-summary">执行任务 -</span>
+            <span class="tag" id="repo-task-summary">仓库任务 -</span>
+            <span class="tag" id="workitem-summary">WorkItem -</span>
+            <span class="tag" id="td-open-summary">TD -</span>
+            <span class="tag" id="cap-summary">CAP -</span>
+          </div>
+
+          <div class="todo-grid">
+            <div class="todo-split">
+              <div class="todo-block">
+                <h3>执行任务</h3>
+                <div class="task-list" id="task-list"></div>
+              </div>
+              <div class="todo-block">
+                <h3>仓库级任务</h3>
+                <div class="task-list" id="repo-task-list"></div>
+              </div>
+            </div>
+
+            <div class="todo-block table-wrap">
+              <h3>统一工作项（WorkItem）</h3>
+              <table>
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>类型</th>
+                    <th>状态</th>
+                    <th>标题</th>
+                    <th>优先级</th>
+                    <th>关联</th>
+                  </tr>
+                </thead>
+                <tbody id="workitem-body"></tbody>
+              </table>
+            </div>
+
+            <div class="todo-split">
+              <div class="todo-block table-wrap">
+                <h3>在制 TD</h3>
+                <table>
+                  <thead>
+                    <tr>
+                      <th>TD</th>
+                      <th>标题</th>
+                      <th>状态</th>
+                      <th>优先级</th>
+                      <th>CAP</th>
+                      <th>最近更新</th>
+                      <th>最近报告</th>
+                      <th>操作</th>
+                    </tr>
+                  </thead>
+                  <tbody id="td-open-body"></tbody>
+                </table>
+              </div>
+              <div class="todo-block table-wrap">
+                <h3>CAP 路线图状态</h3>
+                <table>
+                  <thead>
+                    <tr>
+                      <th>CAP</th>
+                      <th>状态</th>
+                      <th>关联 TD</th>
+                      <th>能力</th>
+                      <th>操作</th>
+                    </tr>
+                  </thead>
+                  <tbody id="cap-body"></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" data-panel="rules-hub">
+        <div class="section-head">
+          <h2>文档库规则测试台（内部 + 外部）</h2>
+          <span class="tag" id="rule-hub-summary">-</span>
+        </div>
+        <div class="section-body">
+          <div class="todo-inline">
+            <button class="secondary rule-test-btn" data-action="docs.library.all" type="button">内部全量测试</button>
+            <button class="ghost rule-test-btn" data-action="ci.verify" type="button">外部聚合门禁测试</button>
+          </div>
+          <div class="todo-split">
+            <div class="todo-block">
+              <h3>内部规则</h3>
+              <div class="rule-list" id="rule-internal-list"></div>
+            </div>
+            <div class="todo-block">
+              <h3>外部规则</h3>
+              <div class="rule-list" id="rule-external-list"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" data-panel="docs-structure">
+        <div class="section-head">
+          <h2>文档结构总览（00-09）</h2>
+          <span class="tag" id="docs-structure-summary">-</span>
+        </div>
+        <div class="section-body">
+          <div class="docs-domain-grid" id="docs-domain-grid"></div>
+        </div>
+      </section>
+
+      <section class="section" data-panel="experience-hub">
+        <div class="section-head">
+          <h2>经验库</h2>
+          <span class="tag" id="exp-summary">-</span>
+        </div>
+        <div class="section-body">
+          <div class="todo-inline">
+            <button class="secondary rule-test-btn" data-action="docs.library.experience" id="experience-check-btn" type="button">
+              执行经验库校验
+            </button>
+          </div>
+          <div class="doc-list" id="exp-docs-list"></div>
+        </div>
+      </section>
+
+      <section class="section" data-panel="dirty">
+        <div class="section-head">
+          <h2>工作区变更</h2>
+          <span class="tag" id="dirty-summary">-</span>
+        </div>
+        <div class="section-body table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>状态</th>
+                <th>文件</th>
+              </tr>
+            </thead>
+            <tbody id="dirty-body"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="section" data-panel="action">
+        <div class="section-head">
+          <h2>动作输出</h2>
+          <span class="tag" id="action-result-tag">等待执行</span>
+        </div>
+        <div class="section-body">
+          <div id="action-log" class="log-box">尚未执行动作。</div>
+        </div>
+      </section>
+    </main>
+
+    <script>
+      const state = {
+        autoRefresh: true,
+        activeTab: "todo-hub",
+        timerId: 0,
+        snapshot: null,
+      };
+
+      function setText(id, text) {
+        const el = document.getElementById(id);
+        if (el) el.textContent = text;
+      }
+
+      function badgeClass(value) {
+        if (value === "Done" || value === "PASS" || value === "干净") return "tag ok";
+        if (value === "Blocked" || value === "In Progress" || value === "有改动") return "tag warn";
+        if (value === "FAIL") return "tag fail";
+        return "tag";
+      }
+
+      function escapeHtml(value) {
+        return String(value)
+          .replaceAll("&", "&amp;")
+          .replaceAll("<", "&lt;")
+          .replaceAll(">", "&gt;");
+      }
+
+      function setActiveTab(tabId) {
+        state.activeTab = tabId;
+        document.querySelectorAll("[data-panel]").forEach((panel) => {
+          panel.classList.toggle("panel-hidden", panel.dataset.panel !== tabId);
+        });
+        document.querySelectorAll(".tab-btn").forEach((btn) => {
+          btn.classList.toggle("active", btn.dataset.tab === tabId);
+        });
+      }
+
+      async function fetchStatus() {
+        const resp = await fetch("/api/status", { cache: "no-store" });
+        if (!resp.ok) {
+          throw new Error(`状态拉取失败: ${resp.status}`);
+        }
+        return resp.json();
+      }
+
+      async function postAction(action, params = {}) {
+        const tag = document.getElementById("action-result-tag");
+        const logEl = document.getElementById("action-log");
+        tag.className = "tag warn";
+        tag.textContent = "执行中";
+        logEl.textContent = `执行动作: ${action}`;
+
+        const payload = { action, ...params };
+        const resp = await fetch("/api/action", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+        const result = await resp.json();
+        const ok = Boolean(result.ok);
+        tag.className = ok ? "tag ok" : "tag fail";
+        tag.textContent = ok ? "执行成功" : `执行失败(${result.returnCode ?? "-"})`;
+
+        const output = [
+          `[command] ${Array.isArray(result.command) ? result.command.join(" ") : "-"}`,
+          `[return] ${result.returnCode ?? "-"}`,
+          "",
+          "[stdout]",
+          result.stdout || "(empty)",
+          "",
+          "[stderr]",
+          result.stderr || "(empty)",
+        ].join("\n");
+        logEl.textContent = output;
+
+        await loadAndRender();
+      }
+
+      function renderSummary(data) {
+        setText("branch", data.repo.branch);
+        setText("head", data.repo.head);
+        setText("generated-at", data.generatedAt);
+        setText("td-open", String(data.summary.tdOpenCount));
+        setText("cap-pending", String(data.summary.capPendingCount));
+        setText("task-count", String(data.summary.todoTaskCount || data.summary.pendingTaskCount || 0));
+        setText("doc-rule-count", String(data.summary.docRuleCount || 0));
+        setText("todo-summary", `总计 ${data.summary.todoTaskCount || 0} 项`);
+        setText("task-summary", `总计 ${data.summary.pendingTaskCount} 项`);
+        setText("repo-task-summary", `总计 ${data.summary.repoTaskCount || 0} 项`);
+        setText("td-open-summary", `${data.summary.tdOpenCount} 项`);
+        setText("cap-summary", `${data.summary.capDoneCount}/${data.summary.capTotalCount} Done`);
+        setText("workitem-summary", `${(data.workItems || []).length} 项`);
+        setText("dirty-summary", data.repo.isDirty ? `有改动 (${data.repo.changedCount})` : "干净");
+        const dirtyEl = document.getElementById("dirty-summary");
+        if (dirtyEl) {
+          dirtyEl.className = badgeClass(data.repo.isDirty ? "有改动" : "干净");
+        }
+      }
+
+      function renderWorkItems(items) {
+        const body = document.getElementById("workitem-body");
+        if (!items.length) {
+          body.innerHTML = '<tr><td colspan="6"><div class="empty">无工作项数据。</div></td></tr>';
+          return;
+        }
+        body.innerHTML = items
+          .map((item) => {
+            const statusClass = badgeClass(item.status);
+            const links =
+              item.kind === "debt"
+                ? (item.links?.capabilityIds || []).join(", ") || "-"
+                : (item.links?.debtIds || []).join(", ") || "-";
+            return `
+              <tr>
+                <td>${escapeHtml(item.id)}</td>
+                <td>${escapeHtml(item.kind)}</td>
+                <td><span class="${statusClass}">${escapeHtml(item.status)}</span></td>
+                <td>${escapeHtml(item.title || "-")}</td>
+                <td>${escapeHtml(item.priority || "-")}</td>
+                <td>${escapeHtml(links)}</td>
+              </tr>
+            `;
+          })
+          .join("");
+      }
+
+      function renderDocsStructure(structure) {
+        const domainRoot = document.getElementById("docs-domain-grid");
+        if (!domainRoot) return;
+        const domains = structure?.domains || [];
+        const summary = structure?.summary || {};
+
+        setText(
+          "docs-structure-summary",
+          `重点：索引覆盖 ${summary.indexedDomainCount || 0}/${summary.domainCount || 0} | 关键文件 ${
+            summary.keyFilePassCount || 0
+          }/${summary.keyFileCount || 0}`
+        );
+
+        if (!domains.length) {
+          domainRoot.innerHTML = '<div class="empty">未检测到 docs/00-09 结构。</div>';
+        } else {
+          const groups = [
+            {
+              id: "core",
+              title: "核心基线（术语/产品/架构/领域）",
+              match: (d) => ["00-术语表", "01-产品", "02-架构", "03-领域模型"].includes(d.id),
+            },
+            {
+              id: "contract",
+              title: "契约与数据（接口/事件/数据）",
+              match: (d) => ["04-接口", "05-事件", "06-数据"].includes(d.id),
+            },
+            {
+              id: "runtime",
+              title: "运行与安全（运行态/安全）",
+              match: (d) => ["07-运行态", "08-安全"].includes(d.id),
+            },
+            {
+              id: "decision",
+              title: "决策记录（ADR）",
+              match: (d) => ["09-ADR-架构决策"].includes(d.id),
+            },
+          ];
+
+          const renderDomainCard = (domain) => {
+            const readmeClass = domain.hasReadme ? "tag ok" : "tag fail";
+            return `
+              <div class="domain-card">
+                <div class="domain-title">${escapeHtml(domain.id)} · ${escapeHtml(domain.name || "-")}</div>
+                <div class="domain-path">${escapeHtml(domain.path)}</div>
+                <div class="domain-metrics">Markdown: ${escapeHtml(domain.markdownCount)} | 子索引: ${escapeHtml(
+              domain.subIndexCount
+            )}</div>
+                <div class="domain-metrics">索引: <span class="${readmeClass}">${
+              domain.hasReadme ? "README OK" : "README 缺失"
+            }</span></div>
+              </div>
+            `;
+          };
+
+          const renderedGroups = groups
+            .map((group) => {
+              const list = domains.filter((domain) => group.match(domain));
+              if (!list.length) return "";
+              const doneCount = list.filter((item) => item.hasReadme).length;
+              return `
+                <div class="domain-group">
+                  <div class="domain-group-title">${escapeHtml(group.title)} (${doneCount}/${list.length} 含索引)</div>
+                  <div class="domain-group-body">
+                    <div class="docs-domain-grid">
+                      ${list.map(renderDomainCard).join("")}
+                    </div>
+                  </div>
+                </div>
+              `;
+            })
+            .join("");
+
+          const covered = new Set();
+          for (const g of groups) {
+            for (const d of domains) {
+              if (g.match(d)) {
+                covered.add(d.id);
+              }
+            }
+          }
+          const others = domains.filter((domain) => !covered.has(domain.id));
+          const othersBlock = others.length
+            ? `
+              <div class="domain-group">
+                <div class="domain-group-title">其它目录 (${others.length})</div>
+                <div class="domain-group-body">
+                  <div class="docs-domain-grid">
+                    ${others.map(renderDomainCard).join("")}
+                  </div>
+                </div>
+              </div>
+            `
+            : "";
+
+          domainRoot.innerHTML = `${renderedGroups}${othersBlock}`;
+        }
+      }
+
+      function renderTasks(tasks) {
+        const root = document.getElementById("task-list");
+        if (!tasks.length) {
+          root.innerHTML = '<div class="empty">当前没有待执行任务。</div>';
+          return;
+        }
+
+        root.innerHTML = tasks
+          .map((task) => {
+            const canRun = task.action && task.action !== "command.copy_only";
+            const btn = canRun
+              ? `<button class="primary run-task-btn" data-action="${escapeHtml(
+                  task.action
+                )}" data-td="${escapeHtml(task.params?.tdId || "")}" data-cap="${escapeHtml(
+                  task.params?.capId || ""
+                )}">执行</button>`
+              : `<button class="ghost copy-task-btn" data-command="${escapeHtml(task.command)}">复制命令</button>`;
+            return `
+              <div class="task-item">
+                <div>
+                  <strong>${escapeHtml(task.title)}</strong>
+                  <div class="task-meta">${escapeHtml(task.reason || "")}</div>
+                  <div class="task-meta">优先级: ${escapeHtml(task.priority || "-")} | TD: ${escapeHtml(
+                    task.relatedTd || "-"
+                  )} | CAP: ${escapeHtml(task.relatedCap || "-")}</div>
+                  <div class="task-command">${escapeHtml(task.command || "-")}</div>
+                </div>
+                <div>${btn}</div>
+              </div>
+            `;
+          })
+          .join("");
+      }
+
+      function renderRepoTasks(tasks) {
+        const root = document.getElementById("repo-task-list");
+        if (!root) return;
+        if (!tasks.length) {
+          root.innerHTML = '<div class="empty">当前没有仓库级任务。</div>';
+          return;
+        }
+        root.innerHTML = tasks
+          .map((task) => {
+            const canRun = task.action && task.action !== "command.copy_only";
+            const btn = canRun
+              ? `<button class="primary run-task-btn" data-action="${escapeHtml(
+                  task.action
+                )}" data-td="${escapeHtml(task.params?.tdId || "")}" data-cap="${escapeHtml(
+                  task.params?.capId || ""
+                )}">执行</button>`
+              : `<button class="ghost copy-task-btn" data-command="${escapeHtml(task.command)}">复制命令</button>`;
+            return `
+              <div class="task-item">
+                <div>
+                  <strong>${escapeHtml(task.title)}</strong>
+                  <div class="task-meta">${escapeHtml(task.reason || "")}</div>
+                  <div class="task-meta">类型: ${escapeHtml(task.type || "-")} | 优先级: ${escapeHtml(
+              task.priority || "-"
+            )}</div>
+                  <div class="task-command">${escapeHtml(task.command || "-")}</div>
+                </div>
+                <div>${btn}</div>
+              </div>
+            `;
+          })
+          .join("");
+      }
+
+      function renderRuleCatalog(catalog) {
+        const internal = catalog?.internal || [];
+        const external = catalog?.external || [];
+        const internalRoot = document.getElementById("rule-internal-list");
+        const externalRoot = document.getElementById("rule-external-list");
+        if (!internalRoot || !externalRoot) return;
+
+        const renderRule = (rule) => {
+          const status = rule.status?.status || "UNKNOWN";
+          const endedAt = rule.status?.endedAt || "-";
+          const tagClass = status === "PASS" ? "tag ok" : status === "FAIL" ? "tag fail" : "tag warn";
+          return `
+            <div class="rule-card">
+              <div>
+                <strong>${escapeHtml(rule.title)}</strong>
+                <div class="rule-meta">${escapeHtml(rule.description || "-")}</div>
+                <div class="rule-meta">来源：${escapeHtml(rule.source || "-")}</div>
+                <div class="rule-meta">状态：<span class="${tagClass}">${escapeHtml(status)}</span> | 最近时间：${escapeHtml(
+            endedAt
+          )}</div>
+              </div>
+              <div>
+                <button class="ghost rule-test-btn" data-action="${escapeHtml(rule.action || "")}">测试</button>
+              </div>
+            </div>
+          `;
+        };
+
+        internalRoot.innerHTML = internal.length
+          ? internal.map(renderRule).join("")
+          : '<div class="empty">暂无内部规则。</div>';
+        externalRoot.innerHTML = external.length
+          ? external.map(renderRule).join("")
+          : '<div class="empty">暂无外部规则。</div>';
+        setText("rule-hub-summary", `内部 ${internal.length} 条 | 外部 ${external.length} 条`);
+      }
+
+      function renderExperienceLibrary(library) {
+        const docs = library?.docs || [];
+        const status = library?.lastRun?.status || "UNKNOWN";
+        const statusClass = status === "PASS" ? "tag ok" : status === "FAIL" ? "tag fail" : "tag warn";
+        const endedAt = library?.lastRun?.endedAt || "-";
+        setText("exp-summary", `文档 ${docs.length} 篇 | 校验 <${status}> | 最近 ${endedAt}`);
+        const btn = document.getElementById("experience-check-btn");
+        if (btn && library?.checkAction) {
+          btn.dataset.action = library.checkAction;
+        }
+
+        const root = document.getElementById("exp-docs-list");
+        if (!root) return;
+        if (!docs.length) {
+          root.innerHTML = '<div class="empty">经验库暂无文档。</div>';
+          return;
+        }
+        root.innerHTML = `
+          <div class="doc-item">
+            <strong>经验库校验状态</strong>
+            <div class="task-meta"><span class="${statusClass}">${escapeHtml(status)}</span> | 最近时间：${escapeHtml(
+          endedAt
+        )}</div>
+          </div>
+          ${docs
+            .map(
+              (doc) => `
+                <div class="doc-item">
+                  <strong>${escapeHtml(doc.title)}</strong>
+                  <div class="task-meta">${escapeHtml(doc.path)}</div>
+                </div>
+              `
+            )
+            .join("")}
+        `;
+      }
+
+      function renderTdOpen(rows) {
+        const body = document.getElementById("td-open-body");
+        if (!rows.length) {
+          body.innerHTML = '<tr><td colspan="8"><div class="empty">无在制 TD。</div></td></tr>';
+          return;
+        }
+        body.innerHTML = rows
+          .map((row) => {
+            const run = row.latestRun
+              ? `${row.latestRun.reportType}/${row.latestRun.status}`
+              : "无";
+            const statusClass = badgeClass(row.status);
+            return `
+              <tr>
+                <td>${escapeHtml(row.id)}</td>
+                <td>${escapeHtml(row.title)}</td>
+                <td><span class="${statusClass}">${escapeHtml(row.status)}</span></td>
+                <td>${escapeHtml(row.priority)}</td>
+                <td>${escapeHtml(row.capId)} (${escapeHtml(row.capStatus || "-")})</td>
+                <td>${escapeHtml(row.lastUpdate)}</td>
+                <td>${escapeHtml(run)}</td>
+                <td>
+                  <div class="inline-actions">
+                    <button class="ghost td-action-btn" data-action="workflow.start" data-td="${escapeHtml(
+                      row.id
+                    )}">start</button>
+                    <button class="ghost td-action-btn" data-action="workflow.progress" data-td="${escapeHtml(
+                      row.id
+                    )}">progress</button>
+                    <button class="ghost td-action-btn" data-action="workflow.close" data-td="${escapeHtml(
+                      row.id
+                    )}">close</button>
+                    <button class="secondary td-action-btn" data-action="workflow.full" data-td="${escapeHtml(
+                      row.id
+                    )}">full</button>
+                  </div>
+                </td>
+              </tr>
+            `;
+          })
+          .join("");
+      }
+
+      function renderCaps(rows) {
+        const body = document.getElementById("cap-body");
+        if (!rows.length) {
+          body.innerHTML = '<tr><td colspan="5"><div class="empty">无 CAP 数据。</div></td></tr>';
+          return;
+        }
+        body.innerHTML = rows
+          .map((cap) => {
+            const statusClass = badgeClass(cap.status);
+            const button =
+              cap.status === "Done"
+                ? '<span class="tag ok">无需执行</span>'
+                : `<button class="ghost cap-action-btn" data-cap="${escapeHtml(
+                    cap.id
+                  )}">verify</button>`;
+            return `
+              <tr>
+                <td>${escapeHtml(cap.id)}</td>
+                <td><span class="${statusClass}">${escapeHtml(cap.status)}</span></td>
+                <td>${escapeHtml(cap.tdId || "-")}</td>
+                <td>${escapeHtml(cap.ability || "-")}</td>
+                <td>${button}</td>
+              </tr>
+            `;
+          })
+          .join("");
+      }
+
+      function renderDirty(files) {
+        const body = document.getElementById("dirty-body");
+        if (!files.length) {
+          body.innerHTML = '<tr><td colspan="2"><div class="empty">工作区干净。</div></td></tr>';
+          return;
+        }
+        body.innerHTML = files
+          .map(
+            (f) => `
+            <tr>
+              <td>${escapeHtml(f.status)}</td>
+              <td>${escapeHtml(f.path)}</td>
+            </tr>
+          `
+          )
+          .join("");
+      }
+
+      function renderAll(data) {
+        renderSummary(data);
+        renderDocsStructure(data.docsStructure || {});
+        renderRuleCatalog(data.docRules || {});
+        renderExperienceLibrary(data.experienceLibrary || {});
+        renderTasks(data.pendingTasks || []);
+        renderRepoTasks(data.repoTasks || []);
+        renderWorkItems(data.workItems || []);
+        renderTdOpen(data.td?.open || []);
+        renderCaps(data.caps || []);
+        renderDirty(data.repo?.changedFiles || []);
+        wireActions();
+      }
+
+      function wireActions() {
+        document.querySelectorAll(".td-action-btn").forEach((btn) => {
+          btn.addEventListener("click", async () => {
+            await postAction(btn.dataset.action, { tdId: btn.dataset.td });
+          });
+        });
+        document.querySelectorAll(".cap-action-btn").forEach((btn) => {
+          btn.addEventListener("click", async () => {
+            await postAction("cap.verify", { capId: btn.dataset.cap });
+          });
+        });
+        document.querySelectorAll(".run-task-btn").forEach((btn) => {
+          btn.addEventListener("click", async () => {
+            const params = {};
+            if (btn.dataset.td) params.tdId = btn.dataset.td;
+            if (btn.dataset.cap) params.capId = btn.dataset.cap;
+            await postAction(btn.dataset.action, params);
+          });
+        });
+        document.querySelectorAll(".copy-task-btn").forEach((btn) => {
+          btn.addEventListener("click", async () => {
+            await navigator.clipboard.writeText(btn.dataset.command || "");
+            const tag = document.getElementById("action-result-tag");
+            const logEl = document.getElementById("action-log");
+            tag.className = "tag";
+            tag.textContent = "命令已复制";
+            logEl.textContent = btn.dataset.command || "";
+          });
+        });
+        document.querySelectorAll(".rule-test-btn").forEach((btn) => {
+          btn.addEventListener("click", async () => {
+            if (!btn.dataset.action) return;
+            await postAction(btn.dataset.action, {});
+          });
+        });
+      }
+
+      async function loadAndRender() {
+        try {
+          const data = await fetchStatus();
+          state.snapshot = data;
+          renderAll(data);
+        } catch (err) {
+          setText("action-log", `渲染失败: ${String(err)}`);
+        }
+      }
+
+      function startAutoRefresh() {
+        if (state.timerId) {
+          clearInterval(state.timerId);
+        }
+        if (!state.autoRefresh) return;
+        state.timerId = setInterval(() => {
+          loadAndRender().catch((err) => {
+            setText("action-log", String(err));
+          });
+        }, 30000);
+      }
+
+      function bindTopActions() {
+        document.getElementById("refresh-btn").addEventListener("click", async () => {
+          await loadAndRender();
+        });
+        document.getElementById("verify-btn").addEventListener("click", async () => {
+          await postAction("ci.verify", {});
+        });
+        document.getElementById("autorefresh-btn").addEventListener("click", () => {
+          state.autoRefresh = !state.autoRefresh;
+          setText("autorefresh-btn", `自动刷新：${state.autoRefresh ? "开" : "关"}`);
+          startAutoRefresh();
+        });
+      }
+
+      function bindTabs() {
+        document.querySelectorAll(".tab-btn").forEach((btn) => {
+          btn.addEventListener("click", () => {
+            setActiveTab(btn.dataset.tab || "todo-hub");
+          });
+        });
+      }
+
+      (async function bootstrap() {
+        bindTabs();
+        setActiveTab(state.activeTab);
+        bindTopActions();
+        await loadAndRender();
+        startAutoRefresh();
+      })().catch((err) => {
+        setText("action-log", `初始化失败: ${String(err)}`);
+      });
+    </script>
+  </body>
+</html>

@@ -12,4 +12,9 @@
 
 ## 自动编排入口
 - 工作流映射（单一事实源）：`docs/02-架构/执行计划/workflow-map.yaml`
+- 统一工作项主文件（WorkItem）：`docs/02-架构/执行计划/backlog.yaml`
 - 自动推进与闭环手册：`docs/02-架构/执行计划/工作流自动推进闭环.md`
+- 统一总览 JSON（待执行任务/系统现状）：`scripts/workflow/run.sh overview json`
+- 本地管理看板（Node）：`scripts/workflow/run.sh overview serve 127.0.0.1 8787`
+- backlog 同步：`scripts/workflow/run.sh backlog build`
+- 文档库校验与统一（全量/模块）：`scripts/docs/library-check.sh all` / `scripts/docs/library-check.sh experience`

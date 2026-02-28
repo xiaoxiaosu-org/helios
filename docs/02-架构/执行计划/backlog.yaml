@@ -1,0 +1,255 @@
+{
+  "version": 1,
+  "model": {
+    "entity": "work_item",
+    "kinds": [
+      "debt",
+      "capability"
+    ],
+    "note": "TD 是 debt 的编号，CAP 是 capability；统一在 WorkItem 语义下管理。",
+    "mode": "transitional-sync-from-legacy"
+  },
+  "sources": {
+    "workflowMap": "docs/02-架构/执行计划/workflow-map.yaml",
+    "techDebtFile": "docs/02-架构/技术债清单.md",
+    "planFile": "docs/02-架构/执行计划/active/PLAN-20260227-工程智能化路线图.md",
+    "adrIndexFile": "docs/09-ADR-架构决策/ADR-索引.md"
+  },
+  "summary": {
+    "workItemCount": 12,
+    "debtCount": 2,
+    "debtDoneCount": 1,
+    "debtOpenCount": 1,
+    "capabilityCount": 10,
+    "capabilityDoneCount": 10,
+    "capabilityPendingCount": 0
+  },
+  "workItems": [
+    {
+      "id": "CAP-001",
+      "kind": "capability",
+      "title": "可运行的任务沙盒（每任务隔离）",
+      "status": "Done",
+      "priority": "-",
+      "lastUpdate": "-",
+      "detail": {
+        "gap": "已落地最小沙盒创建/销毁与 smoke 验收",
+        "deliverable": "`scripts/dev/sandbox-create.sh`（或等价）+ 文档说明放 `docs/07-运行态/`",
+        "dod": "CI 可选；本地脚本可重复运行并能清理"
+      },
+      "links": {
+        "debtIds": [
+          "TD-001"
+        ]
+      }
+    },
+    {
+      "id": "CAP-002",
+      "kind": "capability",
+      "title": "Agent 驱动的 UI 验证（浏览器自动化）",
+      "status": "Done",
+      "priority": "-",
+      "lastUpdate": "-",
+      "detail": {
+        "gap": "已落地最小 UI smoke 验证入口与产物归档",
+        "deliverable": "`scripts/e2e/run-ui-check.sh` 产出截图/录屏到固定目录",
+        "dod": "失败时产物可用于复盘；成功可复现"
+      },
+      "links": {
+        "debtIds": []
+      }
+    },
+    {
+      "id": "CAP-003",
+      "kind": "capability",
+      "title": "可查询的可观测性闭环（logs/metrics/traces）",
+      "status": "Done",
+      "priority": "-",
+      "lastUpdate": "-",
+      "detail": {
+        "gap": "已落地最小 trace 生成/查询脚本与查询剧本",
+        "deliverable": "`docs/07-运行态/` 新增“查询剧本”+ 示例查询 + 最小字段规范",
+        "dod": "任意关键链路能按 `traceId` 追到结果与耗时"
+      },
+      "links": {
+        "debtIds": []
+      }
+    },
+    {
+      "id": "CAP-004",
+      "kind": "capability",
+      "title": "架构边界/依赖方向的结构化约束（taste invariants）",
+      "status": "Done",
+      "priority": "-",
+      "lastUpdate": "-",
+      "detail": {
+        "gap": "缺少可机械校验的“目录/模块依赖规则”",
+        "deliverable": "`scripts/ci/arch-check.sh` + 规则文件（例如 `docs/02-架构/边界与依赖规则.md`）",
+        "dod": "CI 硬门禁：违规则阻断且报错提供修复指令"
+      },
+      "links": {
+        "debtIds": []
+      }
+    },
+    {
+      "id": "CAP-005",
+      "kind": "capability",
+      "title": "结构化日志规范自动校验",
+      "status": "Done",
+      "priority": "-",
+      "lastUpdate": "-",
+      "detail": {
+        "gap": "已落地最小结构化日志校验（无上下文字符串日志拦截）",
+        "deliverable": "`scripts/ci/logging-check.sh`（按语言栈逐步启用）",
+        "dod": "CI 报错必须指向“应该使用的 logger/字段”"
+      },
+      "links": {
+        "debtIds": []
+      }
+    },
+    {
+      "id": "CAP-006",
+      "kind": "capability",
+      "title": "质量评分与预算（QUALITY_SCORE / 可靠性预算）",
+      "status": "Done",
+      "priority": "-",
+      "lastUpdate": "-",
+      "detail": {
+        "gap": "已落地自动汇总与同步校验机制",
+        "deliverable": "`docs/02-架构/质量评分与演进.md`（评分维度+目标+现状）",
+        "dod": "每个里程碑更新一次评分与差距"
+      },
+      "links": {
+        "debtIds": []
+      }
+    },
+    {
+      "id": "CAP-007",
+      "kind": "capability",
+      "title": "技术债追踪（tech debt tracker）",
+      "status": "Done",
+      "priority": "-",
+      "lastUpdate": "-",
+      "detail": {
+        "gap": "缺少统一技术债清单与偿还机制",
+        "deliverable": "`docs/02-架构/技术债清单.md`（带 ID/优先级/验收）",
+        "dod": "每次计划评审更新状态；完成项移入 completed"
+      },
+      "links": {
+        "debtIds": [
+          "TD-002"
+        ]
+      }
+    },
+    {
+      "id": "CAP-008",
+      "kind": "capability",
+      "title": "Doc-gardening（周期性熵控制）",
+      "status": "Done",
+      "priority": "-",
+      "lastUpdate": "-",
+      "detail": {
+        "gap": "已落地定时扫描与报告产物机制",
+        "deliverable": "GitHub scheduled workflow + `scripts/docs/gardening.sh`",
+        "dod": "每周自动出报告或 PR；可快速审阅合并"
+      },
+      "links": {
+        "debtIds": []
+      }
+    },
+    {
+      "id": "CAP-009",
+      "kind": "capability",
+      "title": "PR 闭环自动化（从失败到修复指路）",
+      "status": "Done",
+      "priority": "-",
+      "lastUpdate": "-",
+      "detail": {
+        "gap": "缺少 PR 模板、失败指路一致性、修复剧本入口",
+        "deliverable": "`.github/pull_request_template.md` + CI 报错信息标准化",
+        "dod": "PR 默认携带 DoD；失败信息带下一步命令"
+      },
+      "links": {
+        "debtIds": []
+      }
+    },
+    {
+      "id": "CAP-010",
+      "kind": "capability",
+      "title": "PR 校验鲁棒性（门禁自测 + push diff 回退）",
+      "status": "Done",
+      "priority": "-",
+      "lastUpdate": "-",
+      "detail": {
+        "gap": "门禁存在“脚本可执行但规则失效”与 force-push 后 push 检查误失败风险",
+        "deliverable": "`scripts/ci/gate-selftest.sh` + workflow diff fallback（`doc-check`/`quality-gates`）",
+        "dod": "CI 强制执行门禁自测；before SHA 不可达时仍可完成校验"
+      },
+      "links": {
+        "debtIds": []
+      }
+    },
+    {
+      "id": "TD-001",
+      "kind": "debt",
+      "title": "工程智能化能力缺口落地",
+      "status": "In Progress",
+      "priority": "P0",
+      "lastUpdate": "2026-02-28",
+      "detail": {
+        "impact": "工程效率/可靠性",
+        "acceptance": "CAP-001~CAP-010 完成并形成持续门禁",
+        "note": "CAP 最小能力已全部落地并纳入门禁；后续按业务落地持续深化校验规则"
+      },
+      "links": {
+        "capabilityIds": [
+          "CAP-001"
+        ]
+      },
+      "workflow": {
+        "branchPrefix": "cap/CAP-001",
+        "triggerPaths": [
+          "modules/",
+          "apps/",
+          "services/",
+          "src/",
+          "scripts/cap/",
+          "scripts/ci/",
+          ".github/workflows/"
+        ],
+        "requiredDocs": [
+          "docs/02-架构/技术债清单.md",
+          "docs/02-架构/执行计划/active/PLAN-20260227-工程智能化路线图.md",
+          "docs/02-架构/执行计划/workflow-map.yaml",
+          "docs/02-架构/执行计划/工作流自动推进闭环.md",
+          "docs/02-架构/质量评分与演进.md",
+          "docs/02-架构/工程治理/Git门禁与模板对照清单.md"
+        ],
+        "acceptanceCmds": [
+          "scripts/cap/verify.sh CAP-001",
+          "scripts/ci/cap-plan-sync-check.sh --out artifacts/ci/cap-plan-sync",
+          "scripts/docs/update-quality-score.sh --check --sync-out artifacts/ci/cap-plan-sync",
+          "scripts/ci/verify.sh",
+          "scripts/docs/git-governance-sync-check.sh"
+        ]
+      }
+    },
+    {
+      "id": "TD-002",
+      "kind": "debt",
+      "title": "技术债清单状态自动校验不足",
+      "status": "Done",
+      "priority": "-",
+      "lastUpdate": "2026-02-28",
+      "detail": {
+        "doneDate": "2026-02-28",
+        "result": "已在 CI 接入 `scripts/ci/tech-debt-governance-check.sh`，覆盖字段完整性、状态合法性、分区约束、超期说明（7 天）"
+      },
+      "links": {
+        "capabilityIds": [
+          "CAP-007"
+        ]
+      }
+    }
+  ]
+}
