@@ -56,7 +56,7 @@ fi
 
 mapfile -t code_files < <(
   rg --files modules apps services src 2>/dev/null \
-    | rg -N '\\.(js|jsx|ts|tsx|mjs|cjs|py|java|kt|go|rb|php|cs|scala)$' \
+    | rg -N '\.(js|jsx|ts|tsx|mjs|cjs|py|java|kt|go|rb|php|cs|scala)$' \
     || true
 )
 
@@ -95,10 +95,13 @@ is_allowed_target() {
 
 extract_targets() {
   local file="$1"
-  # 提取常见语言 import/require/from 的字符串参数
-  rg -No "(?:from|import|require\\()\\s*['\"]([^'\"]+)['\"]" "$file" 2>/dev/null \
-    | sed -E "s/.*['\"]([^'\"]+)['\"].*/\\1/" \
-    || true
+  # 提取常见语言 import/require/from 的依赖目标
+  {
+    rg -No "(?:from|import|require\\()\\s*['\"]([^'\"]+)['\"]" "$file" 2>/dev/null \
+      | sed -E "s/.*['\"]([^'\"]+)['\"].*/\\1/"
+    rg -No "^[[:space:]]*(?:from|import)[[:space:]]+([A-Za-z_][A-Za-z0-9_\\.]*)" "$file" 2>/dev/null \
+      | sed -E "s/^[[:space:]]*(?:from|import)[[:space:]]+([A-Za-z_][A-Za-z0-9_\\.]*).*/\\1/"
+  } | awk 'NF > 0' | sort -u || true
 }
 
 resolve_target_layer() {
@@ -110,6 +113,10 @@ resolve_target_layer() {
   case "${raw_target}" in
     apps/*|services/*|modules/*|src/*)
       echo "${raw_target%%/*}"
+      return 0
+      ;;
+    apps.*|services.*|modules.*|src.*)
+      echo "${raw_target%%.*}"
       return 0
       ;;
     @/*)
