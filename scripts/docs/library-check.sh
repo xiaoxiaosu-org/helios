@@ -97,13 +97,18 @@ run_index() {
 
 run_rules() {
   local changed_file_list
+  local rc
   changed_file_list="$(mktemp)"
   {
     echo "AGENTS.md"
     find docs/02-架构/工程治理 -type f -name "*.md" | sort
   } > "${changed_file_list}"
+  set +e
   scripts/docs/rule-files-check.sh "${changed_file_list}"
+  rc=$?
+  set -e
   rm -f "${changed_file_list}"
+  return "${rc}"
 }
 
 run_governance() {

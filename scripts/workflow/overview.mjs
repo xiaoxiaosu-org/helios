@@ -202,7 +202,7 @@ function parseGitState(repoRoot) {
     const lines = branchResult.stdout.split(/\r?\n/).filter((line) => line.length > 0);
     if (lines.length > 0) {
       const header = lines[0];
-      const branchMatch = header.match(/^##\s+([^\s.]+)/);
+      const branchMatch = header.match(/^##\s+(.+?)(?:\.\.\.|$)/);
       if (branchMatch) {
         branch = branchMatch[1];
       }
