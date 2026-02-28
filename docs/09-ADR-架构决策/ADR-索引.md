@@ -9,3 +9,4 @@
 - [ADR-20260228-cap-004-arch-boundary-gate](./ADR-20260228-cap-004-arch-boundary-gate.md): CAP-004 架构边界依赖门禁落地
 - [ADR-20260228-cap-007-tech-debt-tracker](./ADR-20260228-cap-007-tech-debt-tracker.md): CAP-007 技术债追踪机制落地
 - [ADR-20260228-cap-007-dod-sync](./ADR-20260228-cap-007-dod-sync.md): CAP-007 DoD 口径同步到执行计划
+- [ADR-20260228-cap-010-pr-gate-hardening](./ADR-20260228-cap-010-pr-gate-hardening.md): CAP-010 PR 校验鲁棒性增强

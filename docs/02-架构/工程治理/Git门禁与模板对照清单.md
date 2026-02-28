@@ -57,6 +57,8 @@
 | `CODEOWNERS` 基线 | `quality-gates.yml` | 本文件 + `AGENTS.md` + `工程治理与门禁.md` | CI 强制 |
 | secrets 扫描与 debug print 阻断 | `quality-gates.yml` | 本文件 + `AGENTS.md` + `工程治理与门禁.md` | CI 强制 |
 | 架构依赖方向门禁（CAP-004） | `quality-gates.yml` + `scripts/ci/arch-check.sh` + `scripts/ci/verify.sh` | 本文件 + `docs/02-架构/边界与依赖规则.md` + 执行计划（CAP-004） | CI 强制 + CAP 验收 |
+| 门禁自测回归（PR 校验鲁棒性） | `quality-gates.yml` + `scripts/ci/gate-selftest.sh` + `scripts/ci/verify.sh` | 本文件 + 执行计划（PR 校验鲁棒性） + 经验库（PR 校验鲁棒性） | CI 强制 + 本地 verify 强制 |
+| push 事件 diff 回退（before SHA 不可达） | `doc-check.yml` + `quality-gates.yml`（Compute changed files / commit range） | 本文件 + 经验库（PR 校验鲁棒性） | CI 容错（merge-base 回退） |
 
 ---
 
@@ -71,6 +73,7 @@
 4) 治理文档必须覆盖关键门禁描述：
 - hooks 名称与职责
 - 关键本地脚本（`scripts/docs/index-check.sh` / `scripts/docs/rule-files-check.sh` / `scripts/docs/git-governance-sync-check.sh` / `scripts/ci/verify.sh`）
+- 门禁自测脚本（`scripts/ci/gate-selftest.sh`）
 - CAP 验收入口（`scripts/cap/verify.sh CAP-00X`）
 - 临时放宽变量（`HELIOS_ALLOW_COMMIT_MAIN`、`HELIOS_ALLOW_RELAXED_COMMIT_MSG`、`HELIOS_ALLOW_PUSH_MAIN`）
 - 中文提交放宽变量（`HELIOS_ALLOW_NON_ZH_COMMIT_MSG`）
