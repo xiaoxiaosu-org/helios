@@ -49,8 +49,10 @@ else
   status_tsv="${tmp_sync}/cap-status.tsv"
 fi
 
-generated_epoch="$(git show -s --format=%ct HEAD 2>/dev/null || date -u +%s)"
-generated_at="$(date -u -d "@${generated_epoch}" +"%Y-%m-%dT%H:%M:%SZ" 2>/dev/null || date -u +"%Y-%m-%dT%H:%M:%SZ")"
+generated_at="$(awk -F': ' '/^- 自动汇总基线\(UTC\): / {print $2; exit}' "${quality_file}" || true)"
+if [ -z "${generated_at}" ]; then
+  generated_at="$(date -u +"%Y-%m-%dT%H:%M:%SZ")"
+fi
 drift_count="$(awk -F '\t' '$5=="drift"{c++} END{print c+0}' "${status_tsv}")"
 
 block_file="$(mktemp)"
