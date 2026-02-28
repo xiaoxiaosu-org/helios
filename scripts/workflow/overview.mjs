@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * HELIOS 仓库统一总览入口（单一数据源聚合 + 本地看板服务）。
+ * HELIOS 仓库统一总览入口（backlog 主模型）。
  */
 
 import fs from "node:fs";
@@ -9,8 +9,8 @@ import path from "node:path";
 import { spawnSync } from "node:child_process";
 import { fileURLToPath, pathToFileURL } from "node:url";
 
-const TD_ID_RE = /^TD-\d{3}$/;
-const CAP_ID_RE = /^CAP-\d{3}$/;
+const WORK_ITEM_ID_RE = /^WI-PLAN\d{10}-\d{2}$/;
+const BACKLOG_REL = "docs/02-架构/执行计划/backlog.yaml";
 
 function isoNow() {
   return new Date().toISOString();
@@ -18,13 +18,6 @@ function isoNow() {
 
 function trim(value) {
   return String(value ?? "").trim();
-}
-
-function splitSemicolon(value) {
-  return String(value ?? "")
-    .split(";")
-    .map((item) => item.trim())
-    .filter(Boolean);
 }
 
 function runCmd(repoRoot, args) {
@@ -43,152 +36,12 @@ function readText(filePath) {
   return fs.readFileSync(filePath, "utf-8");
 }
 
-function parseWorkflowMap(mapFile) {
-  const meta = {};
-  const workflows = {};
-
-  if (!fs.existsSync(mapFile)) {
-    return { meta, workflows };
+function readBacklog(repoRoot) {
+  const file = path.join(repoRoot, BACKLOG_REL);
+  if (!fs.existsSync(file)) {
+    throw new Error(`缺少 backlog 主文件：${BACKLOG_REL}`);
   }
-
-  const lines = readText(mapFile).split(/\r?\n/);
-  let section = "";
-  let current = null;
-
-  for (const raw of lines) {
-    const stripped = raw.trim();
-    if (!stripped || stripped.startsWith("#")) {
-      continue;
-    }
-
-    if (stripped === "meta:") {
-      section = "meta";
-      current = null;
-      continue;
-    }
-    if (stripped === "workflows:") {
-      section = "workflows";
-      current = null;
-      continue;
-    }
-
-    if (section === "meta") {
-      const match = stripped.match(/^([a-zA-Z0-9_]+):\s*(.+)$/);
-      if (match) {
-        meta[match[1]] = match[2].trim().replace(/^['"]|['"]$/g, "");
-      }
-      continue;
-    }
-
-    if (section !== "workflows") {
-      continue;
-    }
-
-    const tdMatch = stripped.match(/^-\s*td_id:\s*(TD-\d{3})\s*$/);
-    if (tdMatch) {
-      current = { td_id: tdMatch[1] };
-      workflows[tdMatch[1]] = current;
-      continue;
-    }
-
-    if (!current) {
-      continue;
-    }
-
-    const fieldMatch = stripped.match(/^([a-zA-Z0-9_]+):\s*(.*)$/);
-    if (fieldMatch) {
-      current[fieldMatch[1]] = fieldMatch[2].trim().replace(/^['"]|['"]$/g, "");
-    }
-  }
-
-  return { meta, workflows };
-}
-
-function splitMarkdownRow(line) {
-  const row = line.trim().replace(/^\|/, "").replace(/\|$/, "");
-  return row.split("|").map((cell) => trim(cell));
-}
-
-function parseTechDebt(techDebtFile) {
-  const openRows = [];
-  const doneRows = [];
-  let section = "";
-
-  if (!fs.existsSync(techDebtFile)) {
-    return { openRows, doneRows };
-  }
-
-  const lines = readText(techDebtFile).split(/\r?\n/);
-  for (const line of lines) {
-    if (line.startsWith("## 在制技术债")) {
-      section = "open";
-      continue;
-    }
-    if (line.startsWith("## 已完成")) {
-      section = "done";
-      continue;
-    }
-    if (!line.startsWith("| TD-")) {
-      continue;
-    }
-
-    const cols = splitMarkdownRow(line);
-    if (section === "open" && cols.length >= 8) {
-      openRows.push({
-        id: cols[0],
-        title: cols[1],
-        impact: cols[2],
-        priority: cols[3],
-        acceptance: cols[4],
-        status: cols[5],
-        lastUpdate: cols[6],
-        note: cols[7] || "-",
-      });
-      continue;
-    }
-
-    if (section === "done" && cols.length >= 4) {
-      doneRows.push({
-        id: cols[0],
-        title: cols[1],
-        doneDate: cols[2],
-        result: cols[3],
-      });
-    }
-  }
-
-  return { openRows, doneRows };
-}
-
-function parseCapPlan(planFile) {
-  const caps = {};
-  if (!fs.existsSync(planFile)) {
-    return caps;
-  }
-
-  const lines = readText(planFile).split(/\r?\n/);
-  for (const line of lines) {
-    if (!line.startsWith("| CAP-")) {
-      continue;
-    }
-    const cols = splitMarkdownRow(line);
-    if (cols.length < 6) {
-      continue;
-    }
-    const capId = cols[0];
-    if (!CAP_ID_RE.test(capId)) {
-      continue;
-    }
-    caps[capId] = {
-      id: capId,
-      ability: cols[1],
-      gap: cols[2],
-      deliverable: cols[3],
-      dod: cols[4],
-      status: cols[5],
-    };
-  }
-  return caps;
+  return JSON.parse(readText(file));
 }
 
 function parseGitState(repoRoot) {
@@ -216,9 +69,7 @@ function parseGitState(repoRoot) {
       }
     }
     for (const line of lines.slice(1)) {
-      if (line.length < 4) {
-        continue;
-      }
+      if (line.length < 4) continue;
       const status = line.slice(0, 2).trim() || "??";
       let filePath = line.slice(3);
       if (filePath.includes(" -> ")) {
@@ -242,14 +93,14 @@ function parseGitState(repoRoot) {
   };
 }
 
-function readLatestWorkflowRun(repoRoot, tdId) {
-  const tdDir = path.join(repoRoot, "artifacts", "workflow", tdId);
-  if (!fs.existsSync(tdDir) || !fs.statSync(tdDir).isDirectory()) {
+function readLatestWorkflowRun(repoRoot, workItemId) {
+  const wiDir = path.join(repoRoot, "artifacts", "workflow", workItemId);
+  if (!fs.existsSync(wiDir) || !fs.statSync(wiDir).isDirectory()) {
     return null;
   }
 
   const runDirs = fs
-    .readdirSync(tdDir, { withFileTypes: true })
+    .readdirSync(wiDir, { withFileTypes: true })
     .filter((entry) => entry.isDirectory())
     .map((entry) => entry.name)
     .sort((a, b) => b.localeCompare(a));
@@ -258,7 +109,7 @@ function readLatestWorkflowRun(repoRoot, tdId) {
   }
 
   const runId = runDirs[0];
-  const runDir = path.join(tdDir, runId);
+  const runDir = path.join(wiDir, runId);
   const closeReport = path.join(runDir, "close-report.txt");
   const progressReport = path.join(runDir, "progress-report.txt");
 
@@ -298,14 +149,6 @@ function readLatestWorkflowRun(repoRoot, tdId) {
     status,
     summary,
   };
-}
-
-function normalizePriority(priority) {
-  const match = trim(priority).match(/^P(\d+)$/);
-  if (!match) {
-    return 99;
-  }
-  return Number(match[1]);
 }
 
 function listExperienceDocs(repoRoot) {
@@ -399,13 +242,9 @@ function countImmediateSubIndexes(dirPath) {
   const entries = fs.readdirSync(dirPath, { withFileTypes: true });
   let count = 0;
   for (const entry of entries) {
-    if (!entry.isDirectory()) {
-      continue;
-    }
+    if (!entry.isDirectory()) continue;
     const readmeFile = path.join(dirPath, entry.name, "README.md");
-    if (fs.existsSync(readmeFile)) {
-      count += 1;
-    }
+    if (fs.existsSync(readmeFile)) count += 1;
   }
   return count;
 }
@@ -437,9 +276,8 @@ function buildDocsStructure(repoRoot, options) {
 
   const keyFiles = [
     { id: "docs_root", title: "docs 总导航", path: "docs/README.md" },
-    { id: "workflow_map", title: "workflow map", path: options.workflowMapRel },
-    { id: "backlog", title: "WorkItem 主文件", path: options.backlogFileRel },
-    { id: "tech_debt", title: "技术债清单", path: options.techDebtRel },
+    { id: "backlog", title: "WorkItem 主文件", path: BACKLOG_REL },
+    { id: "workflow", title: "工作流手册", path: options.workflowGuideRel },
     { id: "plan", title: "执行计划", path: options.planRel },
     { id: "exp_index", title: "经验库索引", path: "docs/02-架构/工程治理/经验库/README.md" },
   ].map((item) => ({
@@ -512,30 +350,12 @@ function buildDocRuleCatalog(docModuleStatuses) {
       status: moduleStatus("all"),
     },
     {
-      id: "external-doc-check",
-      scope: "external",
-      title: "外部 CI 对齐：doc-check",
-      description: "对应 .github/workflows/doc-check.yml 的本地等价检查入口。",
-      source: ".github/workflows/doc-check.yml",
-      action: "docs.library.all",
-      status: moduleStatus("all"),
-    },
-    {
       id: "external-workflow-sync",
       scope: "external",
       title: "外部 CI 对齐：workflow-sync",
       description: "对应 quality-gates 的文档联动门禁。",
       source: "scripts/ci/workflow-sync-check.sh",
       action: "ci.workflow_sync",
-      status: null,
-    },
-    {
-      id: "external-tech-debt",
-      scope: "external",
-      title: "外部 CI 对齐：技术债治理",
-      description: "对应 quality-gates 的技术债治理门禁。",
-      source: "scripts/ci/tech-debt-governance-check.sh",
-      action: "ci.tech_debt",
       status: null,
     },
     {
@@ -556,169 +376,95 @@ function buildDocRuleCatalog(docModuleStatuses) {
   };
 }
 
+function resolvePrimaryPlanRel(repoRoot, planId) {
+  const activeDirRel = "docs/02-架构/执行计划/active";
+  const activeDir = path.join(repoRoot, activeDirRel);
+  if (!fs.existsSync(activeDir) || !fs.statSync(activeDir).isDirectory()) {
+    return `${activeDirRel}/PLAN-20260227-01-工程智能化路线图.md`;
+  }
+  const entries = fs
+    .readdirSync(activeDir, { withFileTypes: true })
+    .filter((entry) => entry.isFile() && entry.name.startsWith("PLAN-") && entry.name.endsWith(".md"))
+    .map((entry) => entry.name)
+    .sort();
+  if (entries.length === 0) {
+    return `${activeDirRel}/PLAN-20260227-01-工程智能化路线图.md`;
+  }
+  if (planId) {
+    const matched = entries.find((name) => name.startsWith(`${planId}-`));
+    if (matched) return `${activeDirRel}/${matched}`;
+  }
+  return `${activeDirRel}/${entries[0]}`;
+}
+
+function normalizePriority(priority) {
+  const match = trim(priority).match(/^P(\d+)$/);
+  if (!match) return 99;
+  return Number(match[1]);
+}
+
 function buildStatus(repoRoot) {
-  const mapFile = path.join(repoRoot, "docs/02-架构/执行计划/workflow-map.yaml");
-  const backlogFileRel = "docs/02-架构/执行计划/backlog.yaml";
-  const { meta, workflows } = parseWorkflowMap(mapFile);
+  const backlog = readBacklog(repoRoot);
+  const workItems = (backlog.workItems || [])
+    .map((item) => ({
+      ...item,
+      latestRun: ["debt", "task"].includes(item.kind) ? readLatestWorkflowRun(repoRoot, item.workItemId) : null,
+    }))
+    .sort((a, b) => String(a.workItemId || "").localeCompare(String(b.workItemId || "")));
 
-  const techDebtRel = meta.tech_debt_file || "docs/02-架构/技术债清单.md";
-  const planRel =
-    meta.plan_file || "docs/02-架构/执行计划/active/PLAN-20260227-工程智能化路线图.md";
-  const adrIndexRel = meta.adr_index_file || "docs/09-ADR-架构决策/ADR-索引.md";
-
-  const techDebtFile = path.join(repoRoot, techDebtRel);
-  const planFile = path.join(repoRoot, planRel);
-  const { openRows: openTd, doneRows: doneTd } = parseTechDebt(techDebtFile);
-  const caps = parseCapPlan(planFile);
   const gitState = parseGitState(repoRoot);
 
-  const capToTd = {};
-  for (const [tdId, record] of Object.entries(workflows)) {
-    const capId = record.cap_id || "";
-    if (CAP_ID_RE.test(capId)) {
-      capToTd[capId] = tdId;
-    }
-  }
-
-  const tdOpenEnriched = [];
-  const tdDoneEnriched = [];
   const pendingTasks = [];
-  const repoTasks = [];
+  for (const item of workItems) {
+    if (item.status === "done") continue;
 
-  for (const row of openTd) {
-    const tdId = row.id;
-    const wf = workflows[tdId] || {};
-    const capId = wf.cap_id || "";
-    const capStatus = (caps[capId] || {}).status || "Unknown";
-    const latestRun = readLatestWorkflowRun(repoRoot, tdId);
-    const acceptanceCmds = splitSemicolon(wf.acceptance_cmds || "");
-    const requiredDocs = splitSemicolon(wf.required_docs || "");
-
-    tdOpenEnriched.push({
-      ...row,
-      capId: capId || "-",
-      capStatus,
-      branchPrefix: wf.branch_prefix || "-",
-      triggerPaths: splitSemicolon(wf.trigger_paths || ""),
-      requiredDocs,
-      acceptanceCmds,
-      latestRun,
-    });
-
-    const priorityNum = normalizePriority(row.priority || "P99");
-    if (row.status === "Open") {
+    const priorityRank = normalizePriority(item.priority || "P99");
+    if (item.status === "todo") {
       pendingTasks.push({
-        id: `${tdId}-start`,
-        title: `启动 ${tdId}`,
+        id: `${item.workItemId}-start`,
+        title: `启动 ${item.workItemId}`,
         type: "workflow",
-        priority: row.priority || "P99",
-        priorityRank: priorityNum,
-        relatedTd: tdId,
-        relatedCap: capId,
-        command: `scripts/workflow/start.sh ${tdId}`,
+        priority: item.priority || "P99",
+        priorityRank,
+        relatedWorkItem: item.workItemId,
+        relatedPlan: item.planId,
+        command: `scripts/workflow/start.sh ${item.workItemId}`,
         action: "workflow.start",
-        params: { tdId },
-        reason: "状态为 Open，需要先启动工作流。",
-      });
-    } else if (acceptanceCmds.length === 0) {
-      pendingTasks.push({
-        id: `${tdId}-progress`,
-        title: `推进 ${tdId}`,
-        type: "workflow",
-        priority: row.priority || "P99",
-        priorityRank: priorityNum,
-        relatedTd: tdId,
-        relatedCap: capId,
-        command: `scripts/workflow/progress.sh ${tdId}`,
-        action: "workflow.progress",
-        params: { tdId },
-        reason: "在制项需要持续执行验收命令并更新状态。",
+        params: { workItemId: item.workItemId },
+        reason: "状态为 todo，需要先启动工作流。",
       });
     }
 
     pendingTasks.push({
-      id: `${tdId}-close`,
-      title: `尝试闭环 ${tdId}`,
+      id: `${item.workItemId}-progress`,
+      title: `推进 ${item.workItemId}`,
       type: "workflow",
-      priority: row.priority || "P99",
-      priorityRank: priorityNum,
-      relatedTd: tdId,
-      relatedCap: capId,
-      command: `scripts/workflow/close.sh ${tdId}`,
+      priority: item.priority || "P99",
+      priorityRank,
+      relatedWorkItem: item.workItemId,
+      relatedPlan: item.planId,
+      command: `scripts/workflow/progress.sh ${item.workItemId}`,
+      action: "workflow.progress",
+      params: { workItemId: item.workItemId },
+      reason: "执行验收命令并更新推进证据。",
+    });
+
+    pendingTasks.push({
+      id: `${item.workItemId}-close`,
+      title: `尝试闭环 ${item.workItemId}`,
+      type: "workflow",
+      priority: item.priority || "P99",
+      priorityRank,
+      relatedWorkItem: item.workItemId,
+      relatedPlan: item.planId,
+      command: `scripts/workflow/close.sh ${item.workItemId}`,
       action: "workflow.close",
-      params: { tdId },
-      reason: "闭环会校验必需文档、CAP 状态与 ADR 要求。",
-    });
-
-    if (acceptanceCmds.length > 0) {
-      pendingTasks.push({
-        id: `${tdId}-acceptance-task`,
-        title: `执行 ${tdId} 验收任务`,
-        type: "acceptance",
-        priority: row.priority || "P99",
-        priorityRank: priorityNum,
-        relatedTd: tdId,
-        relatedCap: capId,
-        command: `scripts/workflow/progress.sh ${tdId}`,
-        action: "workflow.progress",
-        params: { tdId },
-        reason: `任务包含 ${acceptanceCmds.length} 条验收命令（详情见 TD 配置）。`,
-      });
-    }
-
-    if (capId && capStatus !== "Done") {
-      pendingTasks.push({
-        id: `${tdId}-cap-state`,
-        title: `${capId} 尚未 Done`,
-        type: "cap",
-        priority: row.priority || "P99",
-        priorityRank: priorityNum,
-        relatedTd: tdId,
-        relatedCap: capId,
-        command: `更新 ${planRel} 中 ${capId} 状态并补充证据`,
-        action: "command.copy_only",
-        params: { command: `编辑 ${planRel}，推进 ${capId} 至 Done` },
-        reason: "TD 闭环依赖 CAP 状态满足路线图约束。",
-      });
-    }
-  }
-
-  for (const row of doneTd) {
-    const wf = workflows[row.id] || {};
-    tdDoneEnriched.push({
-      ...row,
-      capId: wf.cap_id || "-",
+      params: { workItemId: item.workItemId },
+      reason: "闭环会校验必需文档、依赖与 ADR 约束。",
     });
   }
 
-  const capRows = Object.keys(caps)
-    .sort()
-    .map((capId) => {
-      const cap = caps[capId];
-      const tdId = capToTd[capId] || "-";
-      const isPending = cap.status !== "Done";
-      if (isPending) {
-        pendingTasks.push({
-          id: `${capId}-plan`,
-          title: `推进 ${capId}`,
-          type: "cap",
-          priority: "P2",
-          priorityRank: 2,
-          relatedTd: tdId,
-          relatedCap: capId,
-          command: `scripts/cap/verify.sh ${capId}`,
-          action: "cap.verify",
-          params: { capId },
-          reason: "路线图状态尚未 Done。",
-        });
-      }
-      return {
-        ...cap,
-        tdId,
-        isPending,
-      };
-    });
-
+  const repoTasks = [];
   if (gitState.isDirty) {
     repoTasks.push({
       id: "repo-verify",
@@ -726,8 +472,8 @@ function buildStatus(repoRoot) {
       type: "repo",
       priority: "P1",
       priorityRank: 1,
-      relatedTd: "-",
-      relatedCap: "-",
+      relatedWorkItem: "-",
+      relatedPlan: "-",
       command: "scripts/ci/verify.sh",
       action: "ci.verify",
       params: {},
@@ -736,28 +482,48 @@ function buildStatus(repoRoot) {
   }
 
   pendingTasks.sort((a, b) => {
-    const ar = a.priorityRank ?? 99;
-    const br = b.priorityRank ?? 99;
-    if (ar !== br) {
-      return ar - br;
-    }
-    const at = a.relatedTd ?? "";
-    const bt = b.relatedTd ?? "";
-    if (at !== bt) {
-      return at.localeCompare(bt);
-    }
-    return String(a.id ?? "").localeCompare(String(b.id ?? ""));
+    if (a.priorityRank !== b.priorityRank) return a.priorityRank - b.priorityRank;
+    return String(a.relatedWorkItem || "").localeCompare(String(b.relatedWorkItem || ""));
   });
 
-  const tdBlockedCount = openTd.filter((row) => row.status === "Blocked").length;
-  const capDoneCount = capRows.filter((row) => row.status === "Done").length;
+  const statusCount = {
+    todo: workItems.filter((item) => item.status === "todo").length,
+    in_progress: workItems.filter((item) => item.status === "in_progress").length,
+    blocked: workItems.filter((item) => item.status === "blocked").length,
+    done: workItems.filter((item) => item.status === "done").length,
+  };
+
+  const byPlan = new Map();
+  for (const item of workItems) {
+    const planId = String(item.planId || "unknown");
+    if (!byPlan.has(planId)) {
+      byPlan.set(planId, {
+        planId,
+        total: 0,
+        todo: 0,
+        in_progress: 0,
+        blocked: 0,
+        done: 0,
+      });
+    }
+    const row = byPlan.get(planId);
+    row.total += 1;
+    if (row[item.status] !== undefined) row[item.status] += 1;
+  }
+
+  const plans = [...byPlan.values()]
+    .map((plan) => ({
+      ...plan,
+      completion: plan.total > 0 ? Number(((plan.done / plan.total) * 100).toFixed(1)) : 0,
+    }))
+    .sort((a, b) => a.planId.localeCompare(b.planId));
+
   const experienceDocs = listExperienceDocs(repoRoot);
   const docModuleStatuses = readDocModuleStatuses(repoRoot);
+  const primaryPlanRel = resolvePrimaryPlanRel(repoRoot, plans[0]?.planId || "");
   const docsStructure = buildDocsStructure(repoRoot, {
-    workflowMapRel: path.relative(repoRoot, mapFile),
-    backlogFileRel,
-    techDebtRel,
-    planRel,
+    planRel: primaryPlanRel,
+    workflowGuideRel: "docs/02-架构/执行计划/工作流自动推进闭环.md",
     experienceDocCount: experienceDocs.filter((doc) => doc.type === "experience").length,
   });
   const docRuleCatalog = buildDocRuleCatalog(docModuleStatuses);
@@ -771,76 +537,38 @@ function buildStatus(repoRoot) {
     ...module,
     lastRun: docModuleStatuses[module.id] || null,
   }));
-  const workItems = [
-    ...tdOpenEnriched.map((row) => ({
-      id: row.id,
-      kind: "debt",
-      status: row.status,
-      title: row.title,
-      priority: row.priority,
-      lastUpdate: row.lastUpdate,
-      links: {
-        capabilityIds: row.capId && row.capId !== "-" ? [row.capId] : [],
-      },
-    })),
-    ...tdDoneEnriched.map((row) => ({
-      id: row.id,
-      kind: "debt",
-      status: "Done",
-      title: row.title,
-      priority: "-",
-      lastUpdate: row.doneDate,
-      links: {
-        capabilityIds: row.capId && row.capId !== "-" ? [row.capId] : [],
-      },
-    })),
-    ...capRows.map((row) => ({
-      id: row.id,
-      kind: "capability",
-      status: row.status,
-      title: row.ability,
-      priority: row.status === "Done" ? "-" : "P2",
-      lastUpdate: "-",
-      links: {
-        debtIds: row.tdId && row.tdId !== "-" ? [row.tdId] : [],
-      },
-    })),
-  ];
 
   return {
     generatedAt: isoNow(),
     sources: {
-      workflowMap: path.relative(repoRoot, mapFile),
-      techDebtFile: techDebtRel,
-      planFile: planRel,
-      adrIndexFile: adrIndexRel,
-      backlogFile: backlogFileRel,
+      backlogFile: BACKLOG_REL,
+      planDirectory: backlog.sources?.planDirectory || "docs/02-架构/执行计划/active",
+      techDebtFile: backlog.sources?.techDebtFile || "docs/02-架构/技术债清单.md",
+      adrIndexFile: backlog.sources?.adrIndexFile || "docs/09-ADR-架构决策/ADR-索引.md",
     },
-    model: {
+    model: backlog.model || {
       entity: "work_item",
-      kinds: ["debt", "capability"],
-      note: "TD 是 debt 的编号，不是独立语义类型；CAP 是 capability。",
+      idPattern: "WI-PLANYYYYMMDDNN-NN",
     },
     repo: {
       root: repoRoot,
       ...gitState,
     },
     summary: {
-      tdOpenCount: openTd.length,
-      tdDoneCount: doneTd.length,
-      tdBlockedCount,
-      capTotalCount: capRows.length,
-      capDoneCount,
-      capPendingCount: capRows.length - capDoneCount,
+      workItemCount: workItems.length,
+      planCount: plans.length,
+      todoCount: statusCount.todo,
+      inProgressCount: statusCount.in_progress,
+      blockedCount: statusCount.blocked,
+      doneCount: statusCount.done,
       todoTaskCount: pendingTasks.length + repoTasks.length,
       pendingTaskCount: pendingTasks.length,
       repoTaskCount: repoTasks.length,
       docRuleCount: docRuleCatalog.all.length,
       dirtyFileCount: gitState.changedCount,
     },
-    docsLibrary: {
-      modules: docModules,
-    },
+    plans,
+    docsLibrary: { modules: docModules },
     experienceLibrary: {
       checkAction: "docs.library.experience",
       checkTitle: "经验库规则校验",
@@ -849,42 +577,27 @@ function buildStatus(repoRoot) {
     },
     docRules: docRuleCatalog,
     docsStructure,
-    td: {
-      open: tdOpenEnriched,
-      done: tdDoneEnriched,
-    },
-    caps: capRows,
+    focusWorkItems: workItems.filter((item) => item.status !== "done"),
+    workItems,
     pendingTasks,
     repoTasks,
-    workItems,
   };
 }
 
 function executeAction(repoRoot, payload) {
   const action = trim(payload.action);
-  const tdId = trim(payload.tdId);
-  const capId = trim(payload.capId);
-  const customCommand = trim(payload.command);
+  const workItemId = trim(payload.workItemId);
 
   let command = null;
   if (["workflow.start", "workflow.progress", "workflow.close", "workflow.full"].includes(action)) {
-    if (!TD_ID_RE.test(tdId)) {
-      throw new Error("tdId 非法，必须为 TD-XXX");
+    if (!WORK_ITEM_ID_RE.test(workItemId)) {
+      throw new Error("workItemId 非法，必须为 WI-PLANYYYYMMDDNN-NN");
     }
-    command = ["scripts/workflow/run.sh", tdId, action.split(".", 2)[1]];
+    command = ["scripts/workflow/run.sh", workItemId, action.split(".", 2)[1]];
   } else if (action === "ci.verify") {
     command = ["scripts/ci/verify.sh"];
-  } else if (action === "docs.governance.verify") {
-    command = ["scripts/docs/git-governance-sync-check.sh"];
   } else if (action === "ci.workflow_sync") {
     command = ["scripts/ci/workflow-sync-check.sh"];
-  } else if (action === "ci.tech_debt") {
-    command = ["scripts/ci/tech-debt-governance-check.sh", "--out", "artifacts/ci/tech-debt-governance"];
-  } else if (action === "cap.verify") {
-    if (!CAP_ID_RE.test(capId)) {
-      throw new Error("capId 非法，必须为 CAP-XXX");
-    }
-    command = ["scripts/cap/verify.sh", capId];
   } else if (action === "docs.library.all") {
     command = ["scripts/docs/library-check.sh", "all"];
   } else if (action === "docs.library.index") {
@@ -897,8 +610,6 @@ function executeAction(repoRoot, payload) {
     command = ["scripts/docs/library-check.sh", "governance"];
   } else if (action === "docs.library.gardening") {
     command = ["scripts/docs/library-check.sh", "gardening"];
-  } else if (action === "command.copy_only") {
-    throw new Error(`该任务仅支持复制命令执行：${customCommand}`);
   }
 
   if (!command) {
@@ -947,7 +658,6 @@ function serve(repoRoot, host, port) {
   const server = http.createServer((req, res) => {
     const method = req.method || "GET";
     const url = req.url || "/";
-    console.log(`[overview-http] ${method} ${url}`);
 
     if (method === "GET" && (url === "/" || url === "/index.html")) {
       if (!fs.existsSync(uiFile)) {
@@ -1021,9 +731,7 @@ function parseNamedArgs(rawArgs) {
   const options = {};
   for (let i = 0; i < rawArgs.length; i += 1) {
     const token = rawArgs[i];
-    if (!token.startsWith("--")) {
-      continue;
-    }
+    if (!token.startsWith("--")) continue;
     const key = token.slice(2);
     const value = rawArgs[i + 1] && !rawArgs[i + 1].startsWith("--") ? rawArgs[++i] : "true";
     options[key] = value;
@@ -1075,15 +783,12 @@ function main() {
   const repoRoot = resolveRepoRoot();
   const [command = "", ...rest] = process.argv.slice(2);
 
-  if (command === "json") {
-    return commandJson(repoRoot, rest);
-  }
-  if (command === "serve") {
-    return commandServe(repoRoot, rest);
-  }
+  if (command === "json") return commandJson(repoRoot, rest);
+  if (command === "serve") return commandServe(repoRoot, rest);
   usage();
   return 1;
 }
+
 export { buildStatus, resolveRepoRoot };
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {

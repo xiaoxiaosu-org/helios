@@ -28,14 +28,7 @@ while [ $# -gt 0 ]; do
   esac
 done
 
-map_file="docs/02-架构/执行计划/workflow-map.yaml"
-plan_file="docs/02-架构/执行计划/active/PLAN-20260227-工程智能化路线图.md"
-if [ -f "${map_file}" ]; then
-  mapped_plan="$(awk -F': ' '/^[[:space:]]*plan_file:/ {print $2; exit}' "${map_file}")"
-  if [ -n "${mapped_plan}" ]; then
-    plan_file="${mapped_plan}"
-  fi
-fi
+plan_file="docs/02-架构/执行计划/active/PLAN-20260227-01-工程智能化路线图.md"
 
 [ -f "${plan_file}" ] || {
   echo "[cap-sync] 缺少路线图文件：${plan_file}" >&2

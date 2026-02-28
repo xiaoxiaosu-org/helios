@@ -207,7 +207,7 @@ jobs:
           mkdir -p artifacts/ci/gate-selftest
           scripts/ci/gate-selftest.sh artifacts/ci/gate-selftest
 
-      - name: Enforce workflow map doc linkage
+      - name: Enforce backlog workflow doc linkage
         shell: bash
         run: |
           set -euo pipefail
@@ -219,6 +219,45 @@ jobs:
           fi
 
           scripts/ci/workflow-sync-check.sh changed_files.txt
+
+      - name: Enforce plan template consistency
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          if [ ! -x "scripts/ci/plan-template-check.sh" ]; then
+            echo "缺少可执行脚本：scripts/ci/plan-template-check.sh"
+            echo "下一步：补齐计划模板一致性脚本并赋权：chmod +x scripts/ci/plan-template-check.sh"
+            exit 1
+          fi
+
+          scripts/ci/plan-template-check.sh
+
+      - name: Enforce backlog sync freshness
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          if [ ! -x "scripts/workflow/backlog.sh" ]; then
+            echo "缺少可执行脚本：scripts/workflow/backlog.sh"
+            echo "下一步：补齐 backlog 同步入口并赋权：chmod +x scripts/workflow/backlog.sh"
+            exit 1
+          fi
+
+          scripts/workflow/backlog.sh check
+
+      - name: Enforce governance lock
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          if [ ! -x "scripts/ci/governance-lock-check.sh" ]; then
+            echo "缺少可执行脚本：scripts/ci/governance-lock-check.sh"
+            echo "下一步：补齐治理版本锁校验脚本并赋权：chmod +x scripts/ci/governance-lock-check.sh"
+            exit 1
+          fi
+
+          scripts/ci/governance-lock-check.sh
 
       - name: Enforce tech debt governance
         shell: bash

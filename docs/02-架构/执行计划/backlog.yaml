@@ -1,210 +1,306 @@
 {
-  "version": 1,
+  "version": 3,
   "model": {
     "entity": "work_item",
     "kinds": [
-      "debt",
-      "capability"
+      "initiative",
+      "capability",
+      "task",
+      "debt"
     ],
-    "note": "TD 是 debt 的编号，CAP 是 capability；统一在 WorkItem 语义下管理。",
-    "mode": "transitional-sync-from-legacy"
+    "idPattern": "WI-PLANYYYYMMDDNN-NN",
+    "ownership": "single-plan-single-owner",
+    "note": "WorkItem 必须唯一归属一个 plan，不再兼容 TD/CAP 别名执行。"
   },
   "sources": {
-    "workflowMap": "docs/02-架构/执行计划/workflow-map.yaml",
+    "executionSource": "docs/02-架构/执行计划/backlog.yaml",
+    "planDirectory": "docs/02-架构/执行计划/active",
     "techDebtFile": "docs/02-架构/技术债清单.md",
-    "planFile": "docs/02-架构/执行计划/active/PLAN-20260227-工程智能化路线图.md",
     "adrIndexFile": "docs/09-ADR-架构决策/ADR-索引.md"
   },
   "summary": {
-    "workItemCount": 12,
-    "debtCount": 2,
-    "debtDoneCount": 1,
-    "debtOpenCount": 1,
-    "capabilityCount": 10,
-    "capabilityDoneCount": 10,
-    "capabilityPendingCount": 0
+    "workItemCount": 16,
+    "planCount": 2,
+    "statusCount": {
+      "todo": 4,
+      "in_progress": 1,
+      "blocked": 0,
+      "done": 11
+    },
+    "kindCount": {
+      "initiative": 1,
+      "capability": 10,
+      "task": 2,
+      "debt": 3
+    }
   },
   "workItems": [
     {
-      "id": "CAP-001",
+      "workItemId": "WI-PLAN2026022701-01",
+      "planId": "PLAN-20260227-01",
       "kind": "capability",
+      "legacyId": "CAP-001",
       "title": "可运行的任务沙盒（每任务隔离）",
-      "status": "Done",
-      "priority": "-",
-      "lastUpdate": "-",
+      "owner": "repo-owner",
+      "status": "done",
+      "priority": "P2",
+      "lastUpdate": "2026-02-28",
       "detail": {
-        "gap": "已落地最小沙盒创建/销毁与 smoke 验收",
-        "deliverable": "`scripts/dev/sandbox-create.sh`（或等价）+ 文档说明放 `docs/07-运行态/`",
-        "dod": "CI 可选；本地脚本可重复运行并能清理"
+        "note": ""
       },
       "links": {
-        "debtIds": [
-          "TD-001"
-        ]
+        "dependsOnWorkItems": []
+      },
+      "acceptance": {
+        "cmds": [
+          "scripts/cap/verify.sh CAP-001"
+        ],
+        "evidenceDir": "artifacts/CAP-001/"
       }
     },
     {
-      "id": "CAP-002",
+      "workItemId": "WI-PLAN2026022701-02",
+      "planId": "PLAN-20260227-01",
       "kind": "capability",
+      "legacyId": "CAP-002",
       "title": "Agent 驱动的 UI 验证（浏览器自动化）",
-      "status": "Done",
-      "priority": "-",
-      "lastUpdate": "-",
+      "owner": "repo-owner",
+      "status": "done",
+      "priority": "P2",
+      "lastUpdate": "2026-02-28",
       "detail": {
-        "gap": "已落地最小 UI smoke 验证入口与产物归档",
-        "deliverable": "`scripts/e2e/run-ui-check.sh` 产出截图/录屏到固定目录",
-        "dod": "失败时产物可用于复盘；成功可复现"
+        "note": ""
       },
       "links": {
-        "debtIds": []
+        "dependsOnWorkItems": []
+      },
+      "acceptance": {
+        "cmds": [
+          "scripts/cap/verify.sh CAP-002"
+        ],
+        "evidenceDir": "artifacts/CAP-002/"
       }
     },
     {
-      "id": "CAP-003",
+      "workItemId": "WI-PLAN2026022701-03",
+      "planId": "PLAN-20260227-01",
       "kind": "capability",
+      "legacyId": "CAP-003",
       "title": "可查询的可观测性闭环（logs/metrics/traces）",
-      "status": "Done",
-      "priority": "-",
-      "lastUpdate": "-",
+      "owner": "repo-owner",
+      "status": "done",
+      "priority": "P2",
+      "lastUpdate": "2026-02-28",
       "detail": {
-        "gap": "已落地最小 trace 生成/查询脚本与查询剧本",
-        "deliverable": "`docs/07-运行态/` 新增“查询剧本”+ 示例查询 + 最小字段规范",
-        "dod": "任意关键链路能按 `traceId` 追到结果与耗时"
+        "note": ""
       },
       "links": {
-        "debtIds": []
+        "dependsOnWorkItems": []
+      },
+      "acceptance": {
+        "cmds": [
+          "scripts/cap/verify.sh CAP-003"
+        ],
+        "evidenceDir": "artifacts/CAP-003/"
       }
     },
     {
-      "id": "CAP-004",
+      "workItemId": "WI-PLAN2026022701-04",
+      "planId": "PLAN-20260227-01",
       "kind": "capability",
-      "title": "架构边界/依赖方向的结构化约束（taste invariants）",
-      "status": "Done",
-      "priority": "-",
-      "lastUpdate": "-",
+      "legacyId": "CAP-004",
+      "title": "架构边界/依赖方向结构化约束",
+      "owner": "repo-owner",
+      "status": "done",
+      "priority": "P2",
+      "lastUpdate": "2026-02-28",
       "detail": {
-        "gap": "缺少可机械校验的“目录/模块依赖规则”",
-        "deliverable": "`scripts/ci/arch-check.sh` + 规则文件（例如 `docs/02-架构/边界与依赖规则.md`）",
-        "dod": "CI 硬门禁：违规则阻断且报错提供修复指令"
+        "note": ""
       },
       "links": {
-        "debtIds": []
+        "dependsOnWorkItems": []
+      },
+      "acceptance": {
+        "cmds": [
+          "scripts/cap/verify.sh CAP-004"
+        ],
+        "evidenceDir": "artifacts/CAP-004/"
       }
     },
     {
-      "id": "CAP-005",
+      "workItemId": "WI-PLAN2026022701-05",
+      "planId": "PLAN-20260227-01",
       "kind": "capability",
+      "legacyId": "CAP-005",
       "title": "结构化日志规范自动校验",
-      "status": "Done",
-      "priority": "-",
-      "lastUpdate": "-",
+      "owner": "repo-owner",
+      "status": "done",
+      "priority": "P2",
+      "lastUpdate": "2026-02-28",
       "detail": {
-        "gap": "已落地最小结构化日志校验（无上下文字符串日志拦截）",
-        "deliverable": "`scripts/ci/logging-check.sh`（按语言栈逐步启用）",
-        "dod": "CI 报错必须指向“应该使用的 logger/字段”"
+        "note": ""
       },
       "links": {
-        "debtIds": []
+        "dependsOnWorkItems": []
+      },
+      "acceptance": {
+        "cmds": [
+          "scripts/cap/verify.sh CAP-005"
+        ],
+        "evidenceDir": "artifacts/CAP-005/"
       }
     },
     {
-      "id": "CAP-006",
+      "workItemId": "WI-PLAN2026022701-06",
+      "planId": "PLAN-20260227-01",
       "kind": "capability",
-      "title": "质量评分与预算（QUALITY_SCORE / 可靠性预算）",
-      "status": "Done",
-      "priority": "-",
-      "lastUpdate": "-",
+      "legacyId": "CAP-006",
+      "title": "质量评分与预算",
+      "owner": "repo-owner",
+      "status": "done",
+      "priority": "P2",
+      "lastUpdate": "2026-02-28",
       "detail": {
-        "gap": "已落地自动汇总与同步校验机制",
-        "deliverable": "`docs/02-架构/质量评分与演进.md`（评分维度+目标+现状）",
-        "dod": "每个里程碑更新一次评分与差距"
+        "note": ""
       },
       "links": {
-        "debtIds": []
+        "dependsOnWorkItems": []
+      },
+      "acceptance": {
+        "cmds": [
+          "scripts/cap/verify.sh CAP-006"
+        ],
+        "evidenceDir": "artifacts/CAP-006/"
       }
     },
     {
-      "id": "CAP-007",
+      "workItemId": "WI-PLAN2026022701-07",
+      "planId": "PLAN-20260227-01",
       "kind": "capability",
-      "title": "技术债追踪（tech debt tracker）",
-      "status": "Done",
-      "priority": "-",
-      "lastUpdate": "-",
+      "legacyId": "CAP-007",
+      "title": "技术债追踪",
+      "owner": "repo-owner",
+      "status": "done",
+      "priority": "P2",
+      "lastUpdate": "2026-02-28",
       "detail": {
-        "gap": "缺少统一技术债清单与偿还机制",
-        "deliverable": "`docs/02-架构/技术债清单.md`（带 ID/优先级/验收）",
-        "dod": "每次计划评审更新状态；完成项移入 completed"
+        "note": ""
       },
       "links": {
-        "debtIds": [
-          "TD-002"
-        ]
+        "dependsOnWorkItems": []
+      },
+      "acceptance": {
+        "cmds": [
+          "scripts/cap/verify.sh CAP-007"
+        ],
+        "evidenceDir": "artifacts/CAP-007/"
       }
     },
     {
-      "id": "CAP-008",
+      "workItemId": "WI-PLAN2026022701-08",
+      "planId": "PLAN-20260227-01",
       "kind": "capability",
-      "title": "Doc-gardening（周期性熵控制）",
-      "status": "Done",
-      "priority": "-",
-      "lastUpdate": "-",
+      "legacyId": "CAP-008",
+      "title": "Doc-gardening",
+      "owner": "repo-owner",
+      "status": "done",
+      "priority": "P2",
+      "lastUpdate": "2026-02-28",
       "detail": {
-        "gap": "已落地定时扫描与报告产物机制",
-        "deliverable": "GitHub scheduled workflow + `scripts/docs/gardening.sh`",
-        "dod": "每周自动出报告或 PR；可快速审阅合并"
+        "note": ""
       },
       "links": {
-        "debtIds": []
+        "dependsOnWorkItems": []
+      },
+      "acceptance": {
+        "cmds": [
+          "scripts/cap/verify.sh CAP-008"
+        ],
+        "evidenceDir": "artifacts/CAP-008/"
       }
     },
     {
-      "id": "CAP-009",
+      "workItemId": "WI-PLAN2026022701-09",
+      "planId": "PLAN-20260227-01",
       "kind": "capability",
-      "title": "PR 闭环自动化（从失败到修复指路）",
-      "status": "Done",
-      "priority": "-",
-      "lastUpdate": "-",
+      "legacyId": "CAP-009",
+      "title": "PR 闭环自动化",
+      "owner": "repo-owner",
+      "status": "done",
+      "priority": "P2",
+      "lastUpdate": "2026-02-28",
       "detail": {
-        "gap": "缺少 PR 模板、失败指路一致性、修复剧本入口",
-        "deliverable": "`.github/pull_request_template.md` + CI 报错信息标准化",
-        "dod": "PR 默认携带 DoD；失败信息带下一步命令"
+        "note": ""
       },
       "links": {
-        "debtIds": []
+        "dependsOnWorkItems": []
+      },
+      "acceptance": {
+        "cmds": [
+          "scripts/cap/verify.sh CAP-009"
+        ],
+        "evidenceDir": "artifacts/CAP-009/"
       }
     },
     {
-      "id": "CAP-010",
+      "workItemId": "WI-PLAN2026022701-10",
+      "planId": "PLAN-20260227-01",
       "kind": "capability",
-      "title": "PR 校验鲁棒性（门禁自测 + push diff 回退）",
-      "status": "Done",
-      "priority": "-",
-      "lastUpdate": "-",
+      "legacyId": "CAP-010",
+      "title": "PR 校验鲁棒性",
+      "owner": "repo-owner",
+      "status": "done",
+      "priority": "P2",
+      "lastUpdate": "2026-02-28",
       "detail": {
-        "gap": "门禁存在“脚本可执行但规则失效”与 force-push 后 push 检查误失败风险",
-        "deliverable": "`scripts/ci/gate-selftest.sh` + workflow diff fallback（`doc-check`/`quality-gates`）",
-        "dod": "CI 强制执行门禁自测；before SHA 不可达时仍可完成校验"
+        "note": ""
       },
       "links": {
-        "debtIds": []
+        "dependsOnWorkItems": []
+      },
+      "acceptance": {
+        "cmds": [
+          "scripts/cap/verify.sh CAP-010"
+        ],
+        "evidenceDir": "artifacts/CAP-010/"
       }
     },
     {
-      "id": "TD-001",
+      "workItemId": "WI-PLAN2026022701-11",
+      "planId": "PLAN-20260227-01",
       "kind": "debt",
+      "legacyId": "TD-001",
       "title": "工程智能化能力缺口落地",
-      "status": "In Progress",
+      "owner": "repo-owner",
+      "status": "in_progress",
       "priority": "P0",
       "lastUpdate": "2026-02-28",
       "detail": {
-        "impact": "工程效率/可靠性",
-        "acceptance": "CAP-001~CAP-010 完成并形成持续门禁",
         "note": "CAP 最小能力已全部落地并纳入门禁；后续按业务落地持续深化校验规则"
       },
       "links": {
-        "capabilityIds": [
-          "CAP-001"
+        "dependsOnWorkItems": [
+          "WI-PLAN2026022701-01",
+          "WI-PLAN2026022701-02",
+          "WI-PLAN2026022701-03",
+          "WI-PLAN2026022701-04",
+          "WI-PLAN2026022701-05",
+          "WI-PLAN2026022701-06",
+          "WI-PLAN2026022701-07",
+          "WI-PLAN2026022701-08",
+          "WI-PLAN2026022701-09",
+          "WI-PLAN2026022701-10"
         ]
+      },
+      "acceptance": {
+        "cmds": [
+          "scripts/cap/verify.sh CAP-001",
+          "scripts/ci/cap-plan-sync-check.sh --out artifacts/ci/cap-plan-sync",
+          "scripts/docs/update-quality-score.sh --check --sync-out artifacts/ci/cap-plan-sync",
+          "scripts/ci/verify.sh",
+          "scripts/docs/git-governance-sync-check.sh"
+        ],
+        "evidenceDir": "artifacts/workflow/"
       },
       "workflow": {
         "branchPrefix": "cap/CAP-001",
@@ -219,8 +315,9 @@
         ],
         "requiredDocs": [
           "docs/02-架构/技术债清单.md",
-          "docs/02-架构/执行计划/active/PLAN-20260227-工程智能化路线图.md",
-          "docs/02-架构/执行计划/workflow-map.yaml",
+          "docs/02-架构/执行计划/backlog.yaml",
+          "docs/02-架构/执行计划/PLAN-模板-WorkItem.md",
+          "docs/02-架构/执行计划/active/PLAN-20260227-01-工程智能化路线图.md",
           "docs/02-架构/执行计划/工作流自动推进闭环.md",
           "docs/02-架构/质量评分与演进.md",
           "docs/02-架构/工程治理/Git门禁与模板对照清单.md"
@@ -231,24 +328,222 @@
           "scripts/docs/update-quality-score.sh --check --sync-out artifacts/ci/cap-plan-sync",
           "scripts/ci/verify.sh",
           "scripts/docs/git-governance-sync-check.sh"
-        ]
+        ],
+        "closeChecks": "move_to_done=false,dependencies_done=true,adr_required=false"
+      },
+      "tracking": {
+        "eventsFile": "artifacts/workflow/events/WI-PLAN2026022701-11.jsonl"
       }
     },
     {
-      "id": "TD-002",
+      "workItemId": "WI-PLAN2026022701-12",
+      "planId": "PLAN-20260227-01",
       "kind": "debt",
+      "legacyId": "TD-002",
       "title": "技术债清单状态自动校验不足",
-      "status": "Done",
-      "priority": "-",
+      "owner": "repo-owner",
+      "status": "done",
+      "priority": "P1",
       "lastUpdate": "2026-02-28",
       "detail": {
-        "doneDate": "2026-02-28",
-        "result": "已在 CI 接入 `scripts/ci/tech-debt-governance-check.sh`，覆盖字段完整性、状态合法性、分区约束、超期说明（7 天）"
+        "note": "已在 CI 接入 scripts/ci/tech-debt-governance-check.sh，覆盖字段完整性、状态合法性、分区约束、超期说明（7 天）"
       },
       "links": {
-        "capabilityIds": [
-          "CAP-007"
+        "dependsOnWorkItems": [
+          "WI-PLAN2026022701-07"
         ]
+      },
+      "acceptance": {
+        "cmds": [
+          "scripts/cap/verify.sh CAP-007",
+          "scripts/ci/verify.sh",
+          "scripts/docs/git-governance-sync-check.sh"
+        ],
+        "evidenceDir": "artifacts/workflow/"
+      },
+      "workflow": {
+        "branchPrefix": "cap/CAP-007",
+        "triggerPaths": [
+          "scripts/cap/",
+          "scripts/ci/",
+          ".github/workflows/",
+          "docs/02-架构/技术债清单.md"
+        ],
+        "requiredDocs": [
+          "docs/02-架构/技术债清单.md",
+          "docs/02-架构/执行计划/backlog.yaml",
+          "docs/02-架构/执行计划/PLAN-模板-WorkItem.md",
+          "docs/02-架构/执行计划/active/PLAN-20260227-01-工程智能化路线图.md",
+          "docs/09-ADR-架构决策/ADR-索引.md"
+        ],
+        "acceptanceCmds": [
+          "scripts/cap/verify.sh CAP-007",
+          "scripts/ci/verify.sh",
+          "scripts/docs/git-governance-sync-check.sh"
+        ],
+        "closeChecks": "move_to_done=true,dependencies_done=true,adr_required=true"
+      },
+      "tracking": {
+        "eventsFile": "artifacts/workflow/events/WI-PLAN2026022701-12.jsonl"
+      }
+    },
+    {
+      "workItemId": "WI-PLAN2026022802-01",
+      "planId": "PLAN-20260228-02",
+      "kind": "initiative",
+      "title": "定义在制总账项退场标准",
+      "owner": "repo-owner",
+      "status": "todo",
+      "priority": "P0",
+      "lastUpdate": "2026-02-28",
+      "detail": {
+        "note": ""
+      },
+      "links": {
+        "dependsOnWorkItems": []
+      },
+      "acceptance": {
+        "cmds": [],
+        "evidenceDir": ""
+      }
+    },
+    {
+      "workItemId": "WI-PLAN2026022802-02",
+      "planId": "PLAN-20260228-02",
+      "kind": "task",
+      "title": "拆分并迁移 WI-PLAN2026022701-11 为可闭环子项",
+      "owner": "repo-owner",
+      "status": "todo",
+      "priority": "P0",
+      "lastUpdate": "2026-02-28",
+      "detail": {
+        "note": ""
+      },
+      "links": {
+        "dependsOnWorkItems": [
+          "WI-PLAN2026022802-01"
+        ]
+      },
+      "acceptance": {
+        "cmds": [
+          "scripts/workflow/backlog.sh check",
+          "scripts/ci/plan-template-check.sh"
+        ],
+        "evidenceDir": "artifacts/workflow/"
+      },
+      "workflow": {
+        "branchPrefix": "governance/p0-exit",
+        "triggerPaths": [
+          "docs/02-架构/执行计划/",
+          "scripts/workflow/",
+          "scripts/ci/"
+        ],
+        "requiredDocs": [
+          "docs/02-架构/执行计划/backlog.yaml",
+          "docs/02-架构/执行计划/active/PLAN-20260228-02-P0在制项收敛与退场治理计划.md",
+          "docs/02-架构/执行计划/WorkItem-最小单元与编号策略.md"
+        ],
+        "acceptanceCmds": [
+          "scripts/workflow/backlog.sh check",
+          "scripts/ci/plan-template-check.sh"
+        ],
+        "closeChecks": "move_to_done=true,dependencies_done=false,adr_required=false"
+      },
+      "tracking": {
+        "eventsFile": "artifacts/workflow/events/WI-PLAN2026022802-02.jsonl"
+      }
+    },
+    {
+      "workItemId": "WI-PLAN2026022802-03",
+      "planId": "PLAN-20260228-02",
+      "kind": "task",
+      "title": "新增在制时长SLA门禁，超期必须给出阻塞原因与下一步",
+      "owner": "repo-owner",
+      "status": "todo",
+      "priority": "P0",
+      "lastUpdate": "2026-02-28",
+      "detail": {
+        "note": ""
+      },
+      "links": {
+        "dependsOnWorkItems": [
+          "WI-PLAN2026022802-01"
+        ]
+      },
+      "acceptance": {
+        "cmds": [
+          "scripts/ci/verify.sh",
+          "scripts/workflow/backlog.sh check"
+        ],
+        "evidenceDir": "artifacts/workflow/"
+      },
+      "workflow": {
+        "branchPrefix": "governance/inprogress-sla",
+        "triggerPaths": [
+          "scripts/ci/",
+          "scripts/workflow/",
+          "docs/02-架构/工程治理/"
+        ],
+        "requiredDocs": [
+          "docs/02-架构/工程治理/工程治理与门禁.md",
+          "docs/02-架构/执行计划/backlog.yaml",
+          "docs/02-架构/执行计划/active/PLAN-20260228-02-P0在制项收敛与退场治理计划.md"
+        ],
+        "acceptanceCmds": [
+          "scripts/ci/verify.sh",
+          "scripts/workflow/backlog.sh check"
+        ],
+        "closeChecks": "move_to_done=true,dependencies_done=false,adr_required=false"
+      },
+      "tracking": {
+        "eventsFile": "artifacts/workflow/events/WI-PLAN2026022802-03.jsonl"
+      }
+    },
+    {
+      "workItemId": "WI-PLAN2026022802-04",
+      "planId": "PLAN-20260228-02",
+      "kind": "debt",
+      "title": "完成 WI-PLAN2026022701-11 收口并改为可关闭策略",
+      "owner": "repo-owner",
+      "status": "todo",
+      "priority": "P0",
+      "lastUpdate": "2026-02-28",
+      "detail": {
+        "note": ""
+      },
+      "links": {
+        "dependsOnWorkItems": [
+          "WI-PLAN2026022802-02",
+          "WI-PLAN2026022802-03"
+        ]
+      },
+      "acceptance": {
+        "cmds": [
+          "scripts/workflow/run.sh WI-PLAN2026022701-11 close",
+          "scripts/ci/verify.sh"
+        ],
+        "evidenceDir": "artifacts/workflow/"
+      },
+      "workflow": {
+        "branchPrefix": "governance/p0-closeout",
+        "triggerPaths": [
+          "docs/02-架构/执行计划/",
+          "scripts/workflow/",
+          "scripts/ci/"
+        ],
+        "requiredDocs": [
+          "docs/02-架构/执行计划/backlog.yaml",
+          "docs/02-架构/执行计划/active/PLAN-20260227-01-工程智能化路线图.md",
+          "docs/02-架构/执行计划/active/PLAN-20260228-02-P0在制项收敛与退场治理计划.md"
+        ],
+        "acceptanceCmds": [
+          "scripts/workflow/run.sh WI-PLAN2026022701-11 close",
+          "scripts/ci/verify.sh"
+        ],
+        "closeChecks": "move_to_done=true,dependencies_done=false,adr_required=false"
+      },
+      "tracking": {
+        "eventsFile": "artifacts/workflow/events/WI-PLAN2026022802-04.jsonl"
       }
     }
   ]

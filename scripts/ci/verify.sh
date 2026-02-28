@@ -6,8 +6,11 @@ source "${here}/_lib.sh"
 
 ci_begin "CI 门禁聚合（verify）"
 
+ci_run "${here}/governance-lock-check.sh"
 ci_run "${here}/gate-selftest.sh"
+ci_run "${here}/plan-template-check.sh"
 ci_run "${here}/workflow-sync-check.sh"
+ci_run "${here}/../workflow/backlog.sh" check
 ci_run "${here}/tech-debt-governance-check.sh"
 ci_run "${here}/cap-plan-sync-check.sh" --out artifacts/ci/cap-plan-sync
 ci_run "${here}/../docs/update-quality-score.sh" --check --sync-out artifacts/ci/cap-plan-sync
