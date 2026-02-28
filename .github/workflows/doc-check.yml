@@ -20,6 +20,45 @@ jobs:
           # Keep changed file paths in UTF-8 to avoid escaped octal output on CJK paths.
           git config core.quotepath false
 
+          safe_diff_for_push() {
+            local before_sha="$1"
+            local after_sha="$2"
+            local default_branch="${{ github.event.repository.default_branch }}"
+            if [ -z "${default_branch}" ]; then
+              default_branch="main"
+            fi
+
+            if [ "${before_sha}" = "0000000000000000000000000000000000000000" ]; then
+              echo "IS_ROOT=1" >> diff_meta.env
+              git diff --name-only --root "${after_sha}" > changed_files.txt
+              git diff --name-status --root "${after_sha}" > changed_name_status.txt
+              return 0
+            fi
+
+            if git cat-file -e "${before_sha}^{commit}" 2>/dev/null; then
+              echo "IS_ROOT=0" >> diff_meta.env
+              git diff --name-only "${before_sha}" "${after_sha}" > changed_files.txt
+              git diff --name-status "${before_sha}" "${after_sha}" > changed_name_status.txt
+              return 0
+            fi
+
+            echo "IS_ROOT=0" >> diff_meta.env
+            echo "warning: before SHA 不可达（${before_sha}），改用 merge-base 回退计算 diff。"
+            git fetch --no-tags origin "${default_branch}" --depth=1 >/dev/null 2>&1 || true
+            default_ref="origin/${default_branch}"
+            if ! git show-ref --verify --quiet "refs/remotes/${default_ref}"; then
+              default_ref="HEAD~1"
+            fi
+            base_commit="$(git merge-base "${default_ref}" "${after_sha}" 2>/dev/null || true)"
+            if [ -n "${base_commit}" ]; then
+              git diff --name-only "${base_commit}" "${after_sha}" > changed_files.txt
+              git diff --name-status "${base_commit}" "${after_sha}" > changed_name_status.txt
+            else
+              git diff-tree --no-commit-id --name-only -r "${after_sha}" > changed_files.txt
+              git diff-tree --no-commit-id --name-status -r "${after_sha}" > changed_name_status.txt
+            fi
+          }
+
           EVENT_NAME="${{ github.event_name }}"
 
           : > changed_files.txt
@@ -52,15 +91,7 @@ jobs:
             echo "BEFORE_SHA=${BEFORE_SHA}" >> diff_meta.env
             echo "AFTER_SHA=${AFTER_SHA}" >> diff_meta.env
 
-            if [ "${BEFORE_SHA}" = "0000000000000000000000000000000000000000" ]; then
-              echo "IS_ROOT=1" >> diff_meta.env
-              git diff --name-only --root "${AFTER_SHA}" > changed_files.txt
-              git diff --name-status --root "${AFTER_SHA}" > changed_name_status.txt
-            else
-              echo "IS_ROOT=0" >> diff_meta.env
-              git diff --name-only "${BEFORE_SHA}" "${AFTER_SHA}" > changed_files.txt
-              git diff --name-status "${BEFORE_SHA}" "${AFTER_SHA}" > changed_name_status.txt
-            fi
+            safe_diff_for_push "${BEFORE_SHA}" "${AFTER_SHA}"
           fi
 
           echo "Changed files:"
@@ -75,6 +106,38 @@ jobs:
         run: |
           set -euo pipefail
 
+          safe_rev_list_for_push() {
+            local before_sha="$1"
+            local after_sha="$2"
+            local default_branch="${{ github.event.repository.default_branch }}"
+            if [ -z "${default_branch}" ]; then
+              default_branch="main"
+            fi
+
+            if [ "${before_sha}" = "0000000000000000000000000000000000000000" ]; then
+              git rev-list --no-merges -n 1 "${after_sha}" > commit_shas.txt
+              return 0
+            fi
+
+            if git cat-file -e "${before_sha}^{commit}" 2>/dev/null; then
+              git rev-list --no-merges "${before_sha}..${after_sha}" > commit_shas.txt
+              return 0
+            fi
+
+            echo "warning: before SHA 不可达（${before_sha}），改用 merge-base 回退计算 commit 范围。"
+            git fetch --no-tags origin "${default_branch}" --depth=1 >/dev/null 2>&1 || true
+            default_ref="origin/${default_branch}"
+            if ! git show-ref --verify --quiet "refs/remotes/${default_ref}"; then
+              default_ref="HEAD~1"
+            fi
+            base_commit="$(git merge-base "${default_ref}" "${after_sha}" 2>/dev/null || true)"
+            if [ -n "${base_commit}" ]; then
+              git rev-list --no-merges "${base_commit}..${after_sha}" > commit_shas.txt
+            else
+              git rev-list --no-merges -n 1 "${after_sha}" > commit_shas.txt
+            fi
+          }
+
           EVENT_NAME="${{ github.event_name }}"
           : > commit_shas.txt
           : > commit_subject_failures.txt
@@ -85,11 +148,7 @@ jobs:
           else
             BEFORE_SHA="${{ github.event.before }}"
             AFTER_SHA="${{ github.sha }}"
-            if [ "${BEFORE_SHA}" = "0000000000000000000000000000000000000000" ]; then
-              git rev-list --no-merges -n 1 "${AFTER_SHA}" > commit_shas.txt
-            else
-              git rev-list --no-merges "${BEFORE_SHA}..${AFTER_SHA}" > commit_shas.txt
-            fi
+            safe_rev_list_for_push "${BEFORE_SHA}" "${AFTER_SHA}"
           fi
 
           if [ ! -s commit_shas.txt ]; then
