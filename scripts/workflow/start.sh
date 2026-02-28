@@ -20,7 +20,6 @@ status="$(wf_get_field "${work_item_id}" status || echo "todo")"
 branch_prefix="$(wf_get_field "${work_item_id}" branch_prefix || true)"
 required_docs="$(wf_get_field "${work_item_id}" required_docs || true)"
 acceptance_cmds="$(wf_get_field "${work_item_id}" acceptance_cmds || true)"
-legacy_id="$(wf_get_field "${work_item_id}" legacy_id || true)"
 
 if [ "${status}" = "done" ]; then
   wf_log "当前 WorkItem 已是 done，禁止重复启动：${work_item_id}" >&2
@@ -48,7 +47,6 @@ export WF_RUN_DIR
   echo "# Workflow Start Checklist"
   echo
   echo "- WorkItem: ${work_item_id}"
-  echo "- Legacy: ${legacy_id:--}"
   echo "- Date: ${today}"
   echo "- Branch: $(git branch --show-current)"
   echo

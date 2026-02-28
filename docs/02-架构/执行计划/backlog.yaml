@@ -19,19 +19,19 @@
     "adrIndexFile": "docs/09-ADR-架构决策/ADR-索引.md"
   },
   "summary": {
-    "workItemCount": 16,
-    "planCount": 2,
+    "workItemCount": 43,
+    "planCount": 7,
     "statusCount": {
-      "todo": 4,
+      "todo": 31,
       "in_progress": 1,
       "blocked": 0,
       "done": 11
     },
     "kindCount": {
-      "initiative": 1,
+      "initiative": 6,
       "capability": 10,
-      "task": 2,
-      "debt": 3
+      "task": 19,
+      "debt": 8
     }
   },
   "workItems": [
@@ -39,7 +39,6 @@
       "workItemId": "WI-PLAN2026022701-01",
       "planId": "PLAN-20260227-01",
       "kind": "capability",
-      "legacyId": "CAP-001",
       "title": "可运行的任务沙盒（每任务隔离）",
       "owner": "repo-owner",
       "status": "done",
@@ -62,7 +61,6 @@
       "workItemId": "WI-PLAN2026022701-02",
       "planId": "PLAN-20260227-01",
       "kind": "capability",
-      "legacyId": "CAP-002",
       "title": "Agent 驱动的 UI 验证（浏览器自动化）",
       "owner": "repo-owner",
       "status": "done",
@@ -85,7 +83,6 @@
       "workItemId": "WI-PLAN2026022701-03",
       "planId": "PLAN-20260227-01",
       "kind": "capability",
-      "legacyId": "CAP-003",
       "title": "可查询的可观测性闭环（logs/metrics/traces）",
       "owner": "repo-owner",
       "status": "done",
@@ -108,7 +105,6 @@
       "workItemId": "WI-PLAN2026022701-04",
       "planId": "PLAN-20260227-01",
       "kind": "capability",
-      "legacyId": "CAP-004",
       "title": "架构边界/依赖方向结构化约束",
       "owner": "repo-owner",
       "status": "done",
@@ -131,7 +127,6 @@
       "workItemId": "WI-PLAN2026022701-05",
       "planId": "PLAN-20260227-01",
       "kind": "capability",
-      "legacyId": "CAP-005",
       "title": "结构化日志规范自动校验",
       "owner": "repo-owner",
       "status": "done",
@@ -154,7 +149,6 @@
       "workItemId": "WI-PLAN2026022701-06",
       "planId": "PLAN-20260227-01",
       "kind": "capability",
-      "legacyId": "CAP-006",
       "title": "质量评分与预算",
       "owner": "repo-owner",
       "status": "done",
@@ -177,7 +171,6 @@
       "workItemId": "WI-PLAN2026022701-07",
       "planId": "PLAN-20260227-01",
       "kind": "capability",
-      "legacyId": "CAP-007",
       "title": "技术债追踪",
       "owner": "repo-owner",
       "status": "done",
@@ -200,7 +193,6 @@
       "workItemId": "WI-PLAN2026022701-08",
       "planId": "PLAN-20260227-01",
       "kind": "capability",
-      "legacyId": "CAP-008",
       "title": "Doc-gardening",
       "owner": "repo-owner",
       "status": "done",
@@ -223,7 +215,6 @@
       "workItemId": "WI-PLAN2026022701-09",
       "planId": "PLAN-20260227-01",
       "kind": "capability",
-      "legacyId": "CAP-009",
       "title": "PR 闭环自动化",
       "owner": "repo-owner",
       "status": "done",
@@ -246,7 +237,6 @@
       "workItemId": "WI-PLAN2026022701-10",
       "planId": "PLAN-20260227-01",
       "kind": "capability",
-      "legacyId": "CAP-010",
       "title": "PR 校验鲁棒性",
       "owner": "repo-owner",
       "status": "done",
@@ -269,7 +259,6 @@
       "workItemId": "WI-PLAN2026022701-11",
       "planId": "PLAN-20260227-01",
       "kind": "debt",
-      "legacyId": "TD-001",
       "title": "工程智能化能力缺口落地",
       "owner": "repo-owner",
       "status": "in_progress",
@@ -339,7 +328,6 @@
       "workItemId": "WI-PLAN2026022701-12",
       "planId": "PLAN-20260227-01",
       "kind": "debt",
-      "legacyId": "TD-002",
       "title": "技术债清单状态自动校验不足",
       "owner": "repo-owner",
       "status": "done",
@@ -544,6 +532,1138 @@
       },
       "tracking": {
         "eventsFile": "artifacts/workflow/events/WI-PLAN2026022802-04.jsonl"
+      }
+    },
+    {
+      "workItemId": "WI-PLAN2026022803-01",
+      "planId": "PLAN-20260228-03",
+      "kind": "initiative",
+      "title": "计划初始化（待拆解）",
+      "owner": "repo-owner",
+      "status": "todo",
+      "priority": "P2",
+      "lastUpdate": "2026-02-28",
+      "detail": {
+        "note": ""
+      },
+      "links": {
+        "dependsOnWorkItems": []
+      },
+      "acceptance": {
+        "cmds": [],
+        "evidenceDir": ""
+      }
+    },
+    {
+      "workItemId": "WI-PLAN2026022803-02",
+      "planId": "PLAN-20260228-03",
+      "kind": "task",
+      "title": "定义技术债并入执行计划的映射规则",
+      "owner": "repo-owner",
+      "status": "todo",
+      "priority": "P0",
+      "lastUpdate": "2026-02-28",
+      "detail": {
+        "note": ""
+      },
+      "links": {
+        "dependsOnWorkItems": [
+          "WI-PLAN2026022803-01"
+        ]
+      },
+      "acceptance": {
+        "cmds": [
+          "scripts/workflow/backlog.sh check",
+          "scripts/ci/plan-template-check.sh"
+        ],
+        "evidenceDir": "artifacts/workflow/"
+      },
+      "workflow": {
+        "branchPrefix": "",
+        "triggerPaths": [
+          "docs/02-架构/执行计划/",
+          "docs/02-架构/技术债清单.md",
+          "scripts/workflow/"
+        ],
+        "requiredDocs": [
+          "docs/02-架构/执行计划/backlog.yaml",
+          "docs/02-架构/执行计划/active/PLAN-20260228-03-技术债并入执行计划.md",
+          "docs/02-架构/技术债清单.md"
+        ],
+        "acceptanceCmds": [
+          "scripts/workflow/backlog.sh check",
+          "scripts/ci/plan-template-check.sh"
+        ],
+        "closeChecks": "move_to_done=true,dependencies_done=false,adr_required=false"
+      },
+      "tracking": {
+        "eventsFile": "artifacts/workflow/events/WI-PLAN2026022803-02.jsonl"
+      }
+    },
+    {
+      "workItemId": "WI-PLAN2026022803-03",
+      "planId": "PLAN-20260228-03",
+      "kind": "task",
+      "title": "落地技术债状态同步门禁",
+      "owner": "repo-owner",
+      "status": "todo",
+      "priority": "P0",
+      "lastUpdate": "2026-02-28",
+      "detail": {
+        "note": ""
+      },
+      "links": {
+        "dependsOnWorkItems": [
+          "WI-PLAN2026022803-02"
+        ]
+      },
+      "acceptance": {
+        "cmds": [
+          "scripts/ci/tech-debt-governance-check.sh --out artifacts/ci/tech-debt-governance",
+          "scripts/ci/workflow-sync-check.sh"
+        ],
+        "evidenceDir": "artifacts/workflow/"
+      },
+      "workflow": {
+        "branchPrefix": "",
+        "triggerPaths": [
+          "scripts/ci/",
+          "docs/02-架构/技术债清单.md",
+          "docs/02-架构/执行计划/"
+        ],
+        "requiredDocs": [
+          "docs/02-架构/技术债清单.md",
+          "docs/02-架构/执行计划/backlog.yaml",
+          "docs/02-架构/执行计划/active/PLAN-20260228-03-技术债并入执行计划.md"
+        ],
+        "acceptanceCmds": [
+          "scripts/ci/tech-debt-governance-check.sh --out artifacts/ci/tech-debt-governance",
+          "scripts/ci/workflow-sync-check.sh"
+        ],
+        "closeChecks": "move_to_done=true,dependencies_done=false,adr_required=false"
+      },
+      "tracking": {
+        "eventsFile": "artifacts/workflow/events/WI-PLAN2026022803-03.jsonl"
+      }
+    },
+    {
+      "workItemId": "WI-PLAN2026022803-04",
+      "planId": "PLAN-20260228-03",
+      "kind": "debt",
+      "title": "完成技术债并入执行计划并清理重复维护",
+      "owner": "repo-owner",
+      "status": "todo",
+      "priority": "P0",
+      "lastUpdate": "2026-02-28",
+      "detail": {
+        "note": ""
+      },
+      "links": {
+        "dependsOnWorkItems": [
+          "WI-PLAN2026022803-02",
+          "WI-PLAN2026022803-03"
+        ]
+      },
+      "acceptance": {
+        "cmds": [
+          "scripts/ci/verify.sh",
+          "scripts/workflow/backlog.sh check"
+        ],
+        "evidenceDir": "artifacts/workflow/"
+      },
+      "workflow": {
+        "branchPrefix": "",
+        "triggerPaths": [
+          "docs/02-架构/执行计划/",
+          "docs/02-架构/技术债清单.md",
+          "scripts/ci/"
+        ],
+        "requiredDocs": [
+          "docs/02-架构/技术债清单.md",
+          "docs/02-架构/执行计划/backlog.yaml",
+          "docs/02-架构/执行计划/active/PLAN-20260228-03-技术债并入执行计划.md"
+        ],
+        "acceptanceCmds": [
+          "scripts/ci/verify.sh",
+          "scripts/workflow/backlog.sh check"
+        ],
+        "closeChecks": "move_to_done=true,dependencies_done=false,adr_required=false"
+      },
+      "tracking": {
+        "eventsFile": "artifacts/workflow/events/WI-PLAN2026022803-04.jsonl"
+      }
+    },
+    {
+      "workItemId": "WI-PLAN2026022804-01",
+      "planId": "PLAN-20260228-04",
+      "kind": "initiative",
+      "title": "计划初始化（待拆解）",
+      "owner": "repo-owner",
+      "status": "todo",
+      "priority": "P2",
+      "lastUpdate": "2026-02-28",
+      "detail": {
+        "note": ""
+      },
+      "links": {
+        "dependsOnWorkItems": []
+      },
+      "acceptance": {
+        "cmds": [],
+        "evidenceDir": ""
+      }
+    },
+    {
+      "workItemId": "WI-PLAN2026022804-02",
+      "planId": "PLAN-20260228-04",
+      "kind": "task",
+      "title": "建立经验库分类与命名规范",
+      "owner": "repo-owner",
+      "status": "todo",
+      "priority": "P1",
+      "lastUpdate": "2026-02-28",
+      "detail": {
+        "note": ""
+      },
+      "links": {
+        "dependsOnWorkItems": [
+          "WI-PLAN2026022804-01"
+        ]
+      },
+      "acceptance": {
+        "cmds": [
+          "scripts/docs/library-check.sh experience",
+          "scripts/workflow/backlog.sh check"
+        ],
+        "evidenceDir": "artifacts/workflow/"
+      },
+      "workflow": {
+        "branchPrefix": "",
+        "triggerPaths": [
+          "docs/02-架构/工程治理/经验库/",
+          "docs/02-架构/执行计划/",
+          "scripts/docs/"
+        ],
+        "requiredDocs": [
+          "docs/02-架构/工程治理/经验库/README.md",
+          "docs/02-架构/执行计划/backlog.yaml",
+          "docs/02-架构/执行计划/active/PLAN-20260228-04-经验库管理混乱.md"
+        ],
+        "acceptanceCmds": [
+          "scripts/docs/library-check.sh experience",
+          "scripts/workflow/backlog.sh check"
+        ],
+        "closeChecks": "move_to_done=true,dependencies_done=false,adr_required=false"
+      },
+      "tracking": {
+        "eventsFile": "artifacts/workflow/events/WI-PLAN2026022804-02.jsonl"
+      }
+    },
+    {
+      "workItemId": "WI-PLAN2026022804-03",
+      "planId": "PLAN-20260228-04",
+      "kind": "task",
+      "title": "统一经验库索引与链接校验",
+      "owner": "repo-owner",
+      "status": "todo",
+      "priority": "P1",
+      "lastUpdate": "2026-02-28",
+      "detail": {
+        "note": ""
+      },
+      "links": {
+        "dependsOnWorkItems": [
+          "WI-PLAN2026022804-02"
+        ]
+      },
+      "acceptance": {
+        "cmds": [
+          "scripts/docs/library-check.sh all",
+          "scripts/docs/gardening.sh --out artifacts/ci/doc-gardening"
+        ],
+        "evidenceDir": "artifacts/workflow/"
+      },
+      "workflow": {
+        "branchPrefix": "",
+        "triggerPaths": [
+          "docs/02-架构/工程治理/经验库/",
+          "scripts/docs/"
+        ],
+        "requiredDocs": [
+          "docs/README.md",
+          "docs/02-架构/工程治理/经验库/README.md",
+          "docs/02-架构/执行计划/active/PLAN-20260228-04-经验库管理混乱.md"
+        ],
+        "acceptanceCmds": [
+          "scripts/docs/library-check.sh all",
+          "scripts/docs/gardening.sh --out artifacts/ci/doc-gardening"
+        ],
+        "closeChecks": "move_to_done=true,dependencies_done=false,adr_required=false"
+      },
+      "tracking": {
+        "eventsFile": "artifacts/workflow/events/WI-PLAN2026022804-03.jsonl"
+      }
+    },
+    {
+      "workItemId": "WI-PLAN2026022804-04",
+      "planId": "PLAN-20260228-04",
+      "kind": "debt",
+      "title": "完成经验库治理收口并形成持续机制",
+      "owner": "repo-owner",
+      "status": "todo",
+      "priority": "P1",
+      "lastUpdate": "2026-02-28",
+      "detail": {
+        "note": ""
+      },
+      "links": {
+        "dependsOnWorkItems": [
+          "WI-PLAN2026022804-02",
+          "WI-PLAN2026022804-03"
+        ]
+      },
+      "acceptance": {
+        "cmds": [
+          "scripts/ci/verify.sh",
+          "scripts/docs/git-governance-sync-check.sh"
+        ],
+        "evidenceDir": "artifacts/workflow/"
+      },
+      "workflow": {
+        "branchPrefix": "",
+        "triggerPaths": [
+          "docs/02-架构/工程治理/经验库/",
+          "scripts/docs/",
+          "scripts/ci/"
+        ],
+        "requiredDocs": [
+          "docs/02-架构/工程治理/经验库/README.md",
+          "docs/02-架构/执行计划/backlog.yaml",
+          "docs/02-架构/执行计划/active/PLAN-20260228-04-经验库管理混乱.md"
+        ],
+        "acceptanceCmds": [
+          "scripts/ci/verify.sh",
+          "scripts/docs/git-governance-sync-check.sh"
+        ],
+        "closeChecks": "move_to_done=true,dependencies_done=false,adr_required=false"
+      },
+      "tracking": {
+        "eventsFile": "artifacts/workflow/events/WI-PLAN2026022804-04.jsonl"
+      }
+    },
+    {
+      "workItemId": "WI-PLAN2026022805-01",
+      "planId": "PLAN-20260228-05",
+      "kind": "initiative",
+      "title": "计划初始化（待拆解）",
+      "owner": "repo-owner",
+      "status": "todo",
+      "priority": "P2",
+      "lastUpdate": "2026-02-28",
+      "detail": {
+        "note": ""
+      },
+      "links": {
+        "dependsOnWorkItems": []
+      },
+      "acceptance": {
+        "cmds": [],
+        "evidenceDir": ""
+      }
+    },
+    {
+      "workItemId": "WI-PLAN2026022805-02",
+      "planId": "PLAN-20260228-05",
+      "kind": "task",
+      "title": "定义WI清单字段基线与约束矩阵",
+      "owner": "repo-owner",
+      "status": "todo",
+      "priority": "P0",
+      "lastUpdate": "2026-02-28",
+      "detail": {
+        "note": ""
+      },
+      "links": {
+        "dependsOnWorkItems": [
+          "WI-PLAN2026022805-01"
+        ]
+      },
+      "acceptance": {
+        "cmds": [
+          "scripts/workflow/backlog.sh check",
+          "scripts/ci/plan-template-check.sh"
+        ],
+        "evidenceDir": "artifacts/workflow/"
+      },
+      "workflow": {
+        "branchPrefix": "",
+        "triggerPaths": [
+          "docs/02-架构/执行计划/",
+          "scripts/workflow/",
+          "scripts/ci/"
+        ],
+        "requiredDocs": [
+          "docs/02-架构/执行计划/WorkItem-最小单元与编号策略.md",
+          "docs/02-架构/执行计划/backlog.yaml",
+          "docs/02-架构/执行计划/active/PLAN-20260228-05-WI清单字段完善与重构机制.md"
+        ],
+        "acceptanceCmds": [
+          "scripts/workflow/backlog.sh check",
+          "scripts/ci/plan-template-check.sh"
+        ],
+        "closeChecks": "move_to_done=true,dependencies_done=false,adr_required=false"
+      },
+      "tracking": {
+        "eventsFile": "artifacts/workflow/events/WI-PLAN2026022805-02.jsonl"
+      }
+    },
+    {
+      "workItemId": "WI-PLAN2026022805-03",
+      "planId": "PLAN-20260228-05",
+      "kind": "task",
+      "title": "实现WI字段一致性校验与规范化机制",
+      "owner": "repo-owner",
+      "status": "todo",
+      "priority": "P0",
+      "lastUpdate": "2026-02-28",
+      "detail": {
+        "note": ""
+      },
+      "links": {
+        "dependsOnWorkItems": [
+          "WI-PLAN2026022805-02"
+        ]
+      },
+      "acceptance": {
+        "cmds": [
+          "scripts/workflow/backlog.sh check",
+          "scripts/ci/verify.sh"
+        ],
+        "evidenceDir": "artifacts/workflow/"
+      },
+      "workflow": {
+        "branchPrefix": "",
+        "triggerPaths": [
+          "scripts/workflow/",
+          "scripts/ci/",
+          "docs/02-架构/执行计划/"
+        ],
+        "requiredDocs": [
+          "docs/02-架构/执行计划/backlog.yaml",
+          "docs/02-架构/执行计划/工作流自动推进闭环.md",
+          "docs/02-架构/执行计划/active/PLAN-20260228-05-WI清单字段完善与重构机制.md"
+        ],
+        "acceptanceCmds": [
+          "scripts/workflow/backlog.sh check",
+          "scripts/ci/verify.sh"
+        ],
+        "closeChecks": "move_to_done=true,dependencies_done=false,adr_required=false"
+      },
+      "tracking": {
+        "eventsFile": "artifacts/workflow/events/WI-PLAN2026022805-03.jsonl"
+      }
+    },
+    {
+      "workItemId": "WI-PLAN2026022805-04",
+      "planId": "PLAN-20260228-05",
+      "kind": "task",
+      "title": "建立WI重构执行机制（分批迁移/回滚/验收）",
+      "owner": "repo-owner",
+      "status": "todo",
+      "priority": "P0",
+      "lastUpdate": "2026-02-28",
+      "detail": {
+        "note": ""
+      },
+      "links": {
+        "dependsOnWorkItems": [
+          "WI-PLAN2026022805-02"
+        ]
+      },
+      "acceptance": {
+        "cmds": [
+          "scripts/ci/verify.sh",
+          "scripts/docs/git-governance-sync-check.sh"
+        ],
+        "evidenceDir": "artifacts/workflow/"
+      },
+      "workflow": {
+        "branchPrefix": "",
+        "triggerPaths": [
+          "docs/02-架构/工程治理/",
+          "docs/02-架构/执行计划/",
+          "scripts/ci/"
+        ],
+        "requiredDocs": [
+          "docs/02-架构/工程治理/工程治理与门禁.md",
+          "docs/02-架构/执行计划/active/PLAN-20260228-05-WI清单字段完善与重构机制.md",
+          "docs/02-架构/执行计划/backlog.yaml"
+        ],
+        "acceptanceCmds": [
+          "scripts/ci/verify.sh",
+          "scripts/docs/git-governance-sync-check.sh"
+        ],
+        "closeChecks": "move_to_done=true,dependencies_done=false,adr_required=false"
+      },
+      "tracking": {
+        "eventsFile": "artifacts/workflow/events/WI-PLAN2026022805-04.jsonl"
+      }
+    },
+    {
+      "workItemId": "WI-PLAN2026022805-05",
+      "planId": "PLAN-20260228-05",
+      "kind": "debt",
+      "title": "完成WI整体重构收口与长期治理",
+      "owner": "repo-owner",
+      "status": "todo",
+      "priority": "P0",
+      "lastUpdate": "2026-02-28",
+      "detail": {
+        "note": ""
+      },
+      "links": {
+        "dependsOnWorkItems": [
+          "WI-PLAN2026022805-03",
+          "WI-PLAN2026022805-04"
+        ]
+      },
+      "acceptance": {
+        "cmds": [
+          "scripts/ci/verify.sh",
+          "scripts/workflow/backlog.sh check",
+          "scripts/ci/plan-template-check.sh"
+        ],
+        "evidenceDir": "artifacts/workflow/"
+      },
+      "workflow": {
+        "branchPrefix": "",
+        "triggerPaths": [
+          "docs/02-架构/执行计划/",
+          "scripts/workflow/",
+          "scripts/ci/"
+        ],
+        "requiredDocs": [
+          "docs/02-架构/执行计划/backlog.yaml",
+          "docs/02-架构/执行计划/active/PLAN-20260228-05-WI清单字段完善与重构机制.md",
+          "docs/02-架构/执行计划/WorkItem-最小单元与编号策略.md"
+        ],
+        "acceptanceCmds": [
+          "scripts/ci/verify.sh",
+          "scripts/workflow/backlog.sh check",
+          "scripts/ci/plan-template-check.sh"
+        ],
+        "closeChecks": "move_to_done=true,dependencies_done=false,adr_required=false"
+      },
+      "tracking": {
+        "eventsFile": "artifacts/workflow/events/WI-PLAN2026022805-05.jsonl"
+      }
+    },
+    {
+      "workItemId": "WI-PLAN2026022806-01",
+      "planId": "PLAN-20260228-06",
+      "kind": "initiative",
+      "title": "计划初始化（待拆解）",
+      "owner": "repo-owner",
+      "status": "todo",
+      "priority": "P2",
+      "lastUpdate": "2026-02-28",
+      "detail": {
+        "note": ""
+      },
+      "links": {
+        "dependsOnWorkItems": []
+      },
+      "acceptance": {
+        "cmds": [],
+        "evidenceDir": ""
+      }
+    },
+    {
+      "workItemId": "WI-PLAN2026022806-02",
+      "planId": "PLAN-20260228-06",
+      "kind": "task",
+      "title": "定义质量评分指标口径与分层阈值",
+      "owner": "repo-owner",
+      "status": "todo",
+      "priority": "P0",
+      "lastUpdate": "2026-02-28",
+      "detail": {
+        "note": ""
+      },
+      "links": {
+        "dependsOnWorkItems": [
+          "WI-PLAN2026022806-01"
+        ]
+      },
+      "acceptance": {
+        "cmds": [
+          "scripts/docs/update-quality-score.sh --check --sync-out artifacts/ci/cap-plan-sync",
+          "scripts/workflow/backlog.sh check"
+        ],
+        "evidenceDir": "artifacts/workflow/"
+      },
+      "workflow": {
+        "branchPrefix": "",
+        "triggerPaths": [
+          "docs/02-架构/质量评分与演进.md",
+          "scripts/docs/",
+          "docs/02-架构/执行计划/"
+        ],
+        "requiredDocs": [
+          "docs/02-架构/质量评分与演进.md",
+          "docs/02-架构/执行计划/backlog.yaml",
+          "docs/02-架构/执行计划/active/PLAN-20260228-06-质量评分与演进机制完善.md"
+        ],
+        "acceptanceCmds": [
+          "scripts/docs/update-quality-score.sh --check --sync-out artifacts/ci/cap-plan-sync",
+          "scripts/workflow/backlog.sh check"
+        ],
+        "closeChecks": "move_to_done=true,dependencies_done=false,adr_required=false"
+      },
+      "tracking": {
+        "eventsFile": "artifacts/workflow/events/WI-PLAN2026022806-02.jsonl"
+      }
+    },
+    {
+      "workItemId": "WI-PLAN2026022806-03",
+      "planId": "PLAN-20260228-06",
+      "kind": "task",
+      "title": "强化评分数据源一致性与门禁联动",
+      "owner": "repo-owner",
+      "status": "todo",
+      "priority": "P0",
+      "lastUpdate": "2026-02-28",
+      "detail": {
+        "note": ""
+      },
+      "links": {
+        "dependsOnWorkItems": [
+          "WI-PLAN2026022806-02"
+        ]
+      },
+      "acceptance": {
+        "cmds": [
+          "scripts/ci/cap-plan-sync-check.sh --out artifacts/ci/cap-plan-sync",
+          "scripts/docs/update-quality-score.sh --check --sync-out artifacts/ci/cap-plan-sync",
+          "scripts/ci/verify.sh"
+        ],
+        "evidenceDir": "artifacts/workflow/"
+      },
+      "workflow": {
+        "branchPrefix": "",
+        "triggerPaths": [
+          "scripts/ci/",
+          "scripts/docs/",
+          "docs/02-架构/质量评分与演进.md"
+        ],
+        "requiredDocs": [
+          "docs/02-架构/质量评分与演进.md",
+          "docs/02-架构/执行计划/backlog.yaml",
+          "docs/02-架构/执行计划/active/PLAN-20260228-06-质量评分与演进机制完善.md"
+        ],
+        "acceptanceCmds": [
+          "scripts/ci/cap-plan-sync-check.sh --out artifacts/ci/cap-plan-sync",
+          "scripts/docs/update-quality-score.sh --check --sync-out artifacts/ci/cap-plan-sync",
+          "scripts/ci/verify.sh"
+        ],
+        "closeChecks": "move_to_done=true,dependencies_done=false,adr_required=false"
+      },
+      "tracking": {
+        "eventsFile": "artifacts/workflow/events/WI-PLAN2026022806-03.jsonl"
+      }
+    },
+    {
+      "workItemId": "WI-PLAN2026022806-04",
+      "planId": "PLAN-20260228-06",
+      "kind": "task",
+      "title": "建立评分演进机制（周期复盘/预算纠偏/回归策略）",
+      "owner": "repo-owner",
+      "status": "todo",
+      "priority": "P1",
+      "lastUpdate": "2026-02-28",
+      "detail": {
+        "note": ""
+      },
+      "links": {
+        "dependsOnWorkItems": [
+          "WI-PLAN2026022806-02"
+        ]
+      },
+      "acceptance": {
+        "cmds": [
+          "scripts/docs/git-governance-sync-check.sh",
+          "scripts/ci/verify.sh"
+        ],
+        "evidenceDir": "artifacts/workflow/"
+      },
+      "workflow": {
+        "branchPrefix": "",
+        "triggerPaths": [
+          "docs/02-架构/质量评分与演进.md",
+          "docs/02-架构/工程治理/",
+          "scripts/docs/"
+        ],
+        "requiredDocs": [
+          "docs/02-架构/质量评分与演进.md",
+          "docs/02-架构/工程治理/工程治理与门禁.md",
+          "docs/02-架构/执行计划/active/PLAN-20260228-06-质量评分与演进机制完善.md"
+        ],
+        "acceptanceCmds": [
+          "scripts/docs/git-governance-sync-check.sh",
+          "scripts/ci/verify.sh"
+        ],
+        "closeChecks": "move_to_done=true,dependencies_done=false,adr_required=false"
+      },
+      "tracking": {
+        "eventsFile": "artifacts/workflow/events/WI-PLAN2026022806-04.jsonl"
+      }
+    },
+    {
+      "workItemId": "WI-PLAN2026022806-05",
+      "planId": "PLAN-20260228-06",
+      "kind": "debt",
+      "title": "完成质量评分与演进机制收口并纳入持续治理",
+      "owner": "repo-owner",
+      "status": "todo",
+      "priority": "P0",
+      "lastUpdate": "2026-02-28",
+      "detail": {
+        "note": ""
+      },
+      "links": {
+        "dependsOnWorkItems": [
+          "WI-PLAN2026022806-03",
+          "WI-PLAN2026022806-04"
+        ]
+      },
+      "acceptance": {
+        "cmds": [
+          "scripts/ci/verify.sh",
+          "scripts/workflow/backlog.sh check",
+          "scripts/ci/plan-template-check.sh"
+        ],
+        "evidenceDir": "artifacts/workflow/"
+      },
+      "workflow": {
+        "branchPrefix": "",
+        "triggerPaths": [
+          "docs/02-架构/质量评分与演进.md",
+          "scripts/ci/",
+          "scripts/docs/",
+          "docs/02-架构/执行计划/"
+        ],
+        "requiredDocs": [
+          "docs/02-架构/质量评分与演进.md",
+          "docs/02-架构/执行计划/backlog.yaml",
+          "docs/02-架构/执行计划/active/PLAN-20260228-06-质量评分与演进机制完善.md"
+        ],
+        "acceptanceCmds": [
+          "scripts/ci/verify.sh",
+          "scripts/workflow/backlog.sh check",
+          "scripts/ci/plan-template-check.sh"
+        ],
+        "closeChecks": "move_to_done=true,dependencies_done=false,adr_required=false"
+      },
+      "tracking": {
+        "eventsFile": "artifacts/workflow/events/WI-PLAN2026022806-05.jsonl"
+      }
+    },
+    {
+      "workItemId": "WI-PLAN2026022807-01",
+      "planId": "PLAN-20260228-07",
+      "kind": "initiative",
+      "title": "计划初始化（待拆解）",
+      "owner": "repo-owner",
+      "status": "todo",
+      "priority": "P2",
+      "lastUpdate": "2026-02-28",
+      "detail": {
+        "note": ""
+      },
+      "links": {
+        "dependsOnWorkItems": []
+      },
+      "acceptance": {
+        "cmds": [],
+        "evidenceDir": ""
+      }
+    },
+    {
+      "workItemId": "WI-PLAN2026022807-02",
+      "planId": "PLAN-20260228-07",
+      "kind": "task",
+      "title": "建立差距基线与能力成熟度评分（对齐Harness Engineering）",
+      "owner": "repo-owner",
+      "status": "todo",
+      "priority": "P0",
+      "lastUpdate": "2026-02-28",
+      "detail": {
+        "note": ""
+      },
+      "links": {
+        "dependsOnWorkItems": [
+          "WI-PLAN2026022807-01"
+        ]
+      },
+      "acceptance": {
+        "cmds": [
+          "scripts/workflow/backlog.sh check",
+          "scripts/ci/plan-template-check.sh"
+        ],
+        "evidenceDir": "artifacts/workflow/"
+      },
+      "workflow": {
+        "branchPrefix": "",
+        "triggerPaths": [
+          "docs/02-架构/执行计划/",
+          "docs/02-架构/质量评分与演进.md",
+          "scripts/docs/"
+        ],
+        "requiredDocs": [
+          "docs/02-架构/质量评分与演进.md",
+          "docs/02-架构/执行计划/backlog.yaml",
+          "docs/02-架构/执行计划/active/PLAN-20260228-07-Harness-Engineering能力对齐补齐.md"
+        ],
+        "acceptanceCmds": [
+          "scripts/workflow/backlog.sh check",
+          "scripts/ci/plan-template-check.sh"
+        ],
+        "closeChecks": "move_to_done=true,dependencies_done=false,adr_required=false"
+      },
+      "tracking": {
+        "eventsFile": "artifacts/workflow/events/WI-PLAN2026022807-02.jsonl"
+      }
+    },
+    {
+      "workItemId": "WI-PLAN2026022807-03",
+      "planId": "PLAN-20260228-07",
+      "kind": "task",
+      "title": "建设Agent-to-Agent评审闭环（本地+云评审器）",
+      "owner": "repo-owner",
+      "status": "todo",
+      "priority": "P0",
+      "lastUpdate": "2026-02-28",
+      "detail": {
+        "note": ""
+      },
+      "links": {
+        "dependsOnWorkItems": [
+          "WI-PLAN2026022807-02"
+        ]
+      },
+      "acceptance": {
+        "cmds": [
+          "scripts/ci/verify.sh",
+          "scripts/workflow/backlog.sh check"
+        ],
+        "evidenceDir": "artifacts/workflow/"
+      },
+      "workflow": {
+        "branchPrefix": "",
+        "triggerPaths": [
+          "scripts/workflow/",
+          "scripts/ci/",
+          "docs/02-架构/执行计划/"
+        ],
+        "requiredDocs": [
+          "docs/02-架构/执行计划/工作流自动推进闭环.md",
+          "docs/02-架构/执行计划/backlog.yaml",
+          "docs/02-架构/执行计划/active/PLAN-20260228-07-Harness-Engineering能力对齐补齐.md"
+        ],
+        "acceptanceCmds": [
+          "scripts/ci/verify.sh",
+          "scripts/workflow/backlog.sh check"
+        ],
+        "closeChecks": "move_to_done=true,dependencies_done=false,adr_required=false"
+      },
+      "tracking": {
+        "eventsFile": "artifacts/workflow/events/WI-PLAN2026022807-03.jsonl"
+      }
+    },
+    {
+      "workItemId": "WI-PLAN2026022807-04",
+      "planId": "PLAN-20260228-07",
+      "kind": "task",
+      "title": "建设工作树级可启动环境与隔离观测栈",
+      "owner": "repo-owner",
+      "status": "todo",
+      "priority": "P0",
+      "lastUpdate": "2026-02-28",
+      "detail": {
+        "note": ""
+      },
+      "links": {
+        "dependsOnWorkItems": [
+          "WI-PLAN2026022807-02"
+        ]
+      },
+      "acceptance": {
+        "cmds": [
+          "scripts/ci/verify.sh",
+          "scripts/workflow/backlog.sh check"
+        ],
+        "evidenceDir": "artifacts/workflow/"
+      },
+      "workflow": {
+        "branchPrefix": "",
+        "triggerPaths": [
+          "scripts/",
+          "docs/07-运行态/",
+          "docs/02-架构/执行计划/"
+        ],
+        "requiredDocs": [
+          "docs/07-运行态/运行态总览.md",
+          "docs/02-架构/执行计划/backlog.yaml",
+          "docs/02-架构/执行计划/active/PLAN-20260228-07-Harness-Engineering能力对齐补齐.md"
+        ],
+        "acceptanceCmds": [
+          "scripts/ci/verify.sh",
+          "scripts/workflow/backlog.sh check"
+        ],
+        "closeChecks": "move_to_done=true,dependencies_done=false,adr_required=false"
+      },
+      "tracking": {
+        "eventsFile": "artifacts/workflow/events/WI-PLAN2026022807-04.jsonl"
+      }
+    },
+    {
+      "workItemId": "WI-PLAN2026022807-05",
+      "planId": "PLAN-20260228-07",
+      "kind": "task",
+      "title": "建设UI可读性Harness（CDP快照/前后对比视频）",
+      "owner": "repo-owner",
+      "status": "todo",
+      "priority": "P1",
+      "lastUpdate": "2026-02-28",
+      "detail": {
+        "note": ""
+      },
+      "links": {
+        "dependsOnWorkItems": [
+          "WI-PLAN2026022807-03",
+          "WI-PLAN2026022807-04"
+        ]
+      },
+      "acceptance": {
+        "cmds": [
+          "scripts/ci/verify.sh",
+          "scripts/workflow/backlog.sh check"
+        ],
+        "evidenceDir": "artifacts/workflow/"
+      },
+      "workflow": {
+        "branchPrefix": "",
+        "triggerPaths": [
+          "scripts/e2e/",
+          "scripts/workflow/",
+          "docs/07-运行态/"
+        ],
+        "requiredDocs": [
+          "docs/07-运行态/README.md",
+          "docs/02-架构/执行计划/active/PLAN-20260228-07-Harness-Engineering能力对齐补齐.md",
+          "docs/02-架构/执行计划/backlog.yaml"
+        ],
+        "acceptanceCmds": [
+          "scripts/ci/verify.sh",
+          "scripts/workflow/backlog.sh check"
+        ],
+        "closeChecks": "move_to_done=true,dependencies_done=false,adr_required=false"
+      },
+      "tracking": {
+        "eventsFile": "artifacts/workflow/events/WI-PLAN2026022807-05.jsonl"
+      }
+    },
+    {
+      "workItemId": "WI-PLAN2026022807-06",
+      "planId": "PLAN-20260228-07",
+      "kind": "task",
+      "title": "建设自治执行闭环（复现->修复->验证->PR->反馈->合并）",
+      "owner": "repo-owner",
+      "status": "todo",
+      "priority": "P0",
+      "lastUpdate": "2026-02-28",
+      "detail": {
+        "note": ""
+      },
+      "links": {
+        "dependsOnWorkItems": [
+          "WI-PLAN2026022807-03",
+          "WI-PLAN2026022807-04"
+        ]
+      },
+      "acceptance": {
+        "cmds": [
+          "scripts/ci/verify.sh",
+          "scripts/docs/git-governance-sync-check.sh"
+        ],
+        "evidenceDir": "artifacts/workflow/"
+      },
+      "workflow": {
+        "branchPrefix": "",
+        "triggerPaths": [
+          "scripts/",
+          "docs/02-架构/工程治理/",
+          "docs/02-架构/执行计划/"
+        ],
+        "requiredDocs": [
+          "docs/02-架构/工程治理/工程治理与门禁.md",
+          "docs/02-架构/执行计划/active/PLAN-20260228-07-Harness-Engineering能力对齐补齐.md",
+          "docs/02-架构/执行计划/backlog.yaml"
+        ],
+        "acceptanceCmds": [
+          "scripts/ci/verify.sh",
+          "scripts/docs/git-governance-sync-check.sh"
+        ],
+        "closeChecks": "move_to_done=true,dependencies_done=false,adr_required=false"
+      },
+      "tracking": {
+        "eventsFile": "artifacts/workflow/events/WI-PLAN2026022807-06.jsonl"
+      }
+    },
+    {
+      "workItemId": "WI-PLAN2026022807-07",
+      "planId": "PLAN-20260228-07",
+      "kind": "task",
+      "title": "建设吞吐治理能力（最小阻断门禁+自动后续修复）",
+      "owner": "repo-owner",
+      "status": "todo",
+      "priority": "P1",
+      "lastUpdate": "2026-02-28",
+      "detail": {
+        "note": ""
+      },
+      "links": {
+        "dependsOnWorkItems": [
+          "WI-PLAN2026022807-05",
+          "WI-PLAN2026022807-06"
+        ]
+      },
+      "acceptance": {
+        "cmds": [
+          "scripts/ci/verify.sh",
+          "scripts/docs/update-quality-score.sh --check --sync-out artifacts/ci/cap-plan-sync"
+        ],
+        "evidenceDir": "artifacts/workflow/"
+      },
+      "workflow": {
+        "branchPrefix": "",
+        "triggerPaths": [
+          "scripts/ci/cap-plan-sync-check.sh",
+          "scripts/docs/update-quality-score.sh",
+          "docs/02-架构/质量评分与演进.md"
+        ],
+        "requiredDocs": [
+          "docs/02-架构/工程治理/工程治理与门禁.md",
+          "docs/02-架构/质量评分与演进.md",
+          "docs/02-架构/执行计划/active/PLAN-20260228-07-Harness-Engineering能力对齐补齐.md",
+          "docs/02-架构/执行计划/backlog.yaml"
+        ],
+        "acceptanceCmds": [
+          "scripts/ci/verify.sh",
+          "scripts/docs/update-quality-score.sh --check --sync-out artifacts/ci/cap-plan-sync"
+        ],
+        "closeChecks": "move_to_done=true,dependencies_done=false,adr_required=false"
+      },
+      "tracking": {
+        "eventsFile": "artifacts/workflow/events/WI-PLAN2026022807-07.jsonl"
+      }
+    },
+    {
+      "workItemId": "WI-PLAN2026022807-08",
+      "planId": "PLAN-20260228-07",
+      "kind": "task",
+      "title": "建设后台熵治理机制（垃圾回收/机械重构任务）",
+      "owner": "repo-owner",
+      "status": "todo",
+      "priority": "P1",
+      "lastUpdate": "2026-02-28",
+      "detail": {
+        "note": ""
+      },
+      "links": {
+        "dependsOnWorkItems": [
+          "WI-PLAN2026022807-07"
+        ]
+      },
+      "acceptance": {
+        "cmds": [
+          "scripts/docs/gardening.sh --out artifacts/ci/doc-gardening",
+          "scripts/ci/verify.sh"
+        ],
+        "evidenceDir": "artifacts/workflow/"
+      },
+      "workflow": {
+        "branchPrefix": "",
+        "triggerPaths": [
+          "scripts/docs/",
+          "docs/02-架构/工程治理/经验库/",
+          "docs/02-架构/执行计划/"
+        ],
+        "requiredDocs": [
+          "docs/02-架构/工程治理/经验库/README.md",
+          "docs/02-架构/执行计划/active/PLAN-20260228-07-Harness-Engineering能力对齐补齐.md",
+          "docs/02-架构/执行计划/backlog.yaml"
+        ],
+        "acceptanceCmds": [
+          "scripts/docs/gardening.sh --out artifacts/ci/doc-gardening",
+          "scripts/ci/verify.sh"
+        ],
+        "closeChecks": "move_to_done=true,dependencies_done=false,adr_required=false"
+      },
+      "tracking": {
+        "eventsFile": "artifacts/workflow/events/WI-PLAN2026022807-08.jsonl"
+      }
+    },
+    {
+      "workItemId": "WI-PLAN2026022807-09",
+      "planId": "PLAN-20260228-07",
+      "kind": "debt",
+      "title": "完成Harness Engineering能力对齐收口与持续评估",
+      "owner": "repo-owner",
+      "status": "todo",
+      "priority": "P0",
+      "lastUpdate": "2026-02-28",
+      "detail": {
+        "note": ""
+      },
+      "links": {
+        "dependsOnWorkItems": [
+          "WI-PLAN2026022807-05",
+          "WI-PLAN2026022807-06",
+          "WI-PLAN2026022807-07",
+          "WI-PLAN2026022807-08"
+        ]
+      },
+      "acceptance": {
+        "cmds": [
+          "scripts/ci/verify.sh",
+          "scripts/workflow/backlog.sh check",
+          "scripts/ci/plan-template-check.sh"
+        ],
+        "evidenceDir": "artifacts/workflow/"
+      },
+      "workflow": {
+        "branchPrefix": "",
+        "triggerPaths": [
+          "docs/02-架构/执行计划/",
+          "scripts/ci/",
+          "scripts/workflow/",
+          "scripts/docs/"
+        ],
+        "requiredDocs": [
+          "docs/02-架构/执行计划/active/PLAN-20260228-07-Harness-Engineering能力对齐补齐.md",
+          "docs/02-架构/执行计划/backlog.yaml",
+          "docs/02-架构/质量评分与演进.md"
+        ],
+        "acceptanceCmds": [
+          "scripts/ci/verify.sh",
+          "scripts/workflow/backlog.sh check",
+          "scripts/ci/plan-template-check.sh"
+        ],
+        "closeChecks": "move_to_done=true,dependencies_done=false,adr_required=false"
+      },
+      "tracking": {
+        "eventsFile": "artifacts/workflow/events/WI-PLAN2026022807-09.jsonl"
       }
     }
   ]

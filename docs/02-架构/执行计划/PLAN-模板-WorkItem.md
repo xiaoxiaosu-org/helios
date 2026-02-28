@@ -13,9 +13,9 @@
 
 状态枚举：`todo` / `in_progress` / `blocked` / `done`
 
-| WorkItem | legacy 别名 | 类型 | 标题 | Owner | 状态 | 验收命令 | 证据目录 |
-|---|---|---|---|---|---|---|---|
-| WI-PLAN2026022701-01 | CAP-001 | capability | 示例条目 | repo-owner | in_progress | `scripts/workflow/run.sh WI-PLAN2026022701-01 progress` | `artifacts/workflow/` |
+| WorkItem | 类型 | 标题 | Owner | 状态 | 验收命令 | 证据目录 |
+|---|---|---|---|---|---|---|
+| WI-PLAN2026022701-01 | capability | 示例条目 | repo-owner | in_progress | `scripts/workflow/run.sh WI-PLAN2026022701-01 progress` | `artifacts/workflow/` |
 
 ## 推进记录
 

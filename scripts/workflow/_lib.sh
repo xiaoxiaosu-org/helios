@@ -107,9 +107,6 @@ switch (field) {
   case "owner":
     value = item.owner || "";
     break;
-  case "legacy_id":
-    value = item.legacyId || "";
-    break;
   case "branch_prefix":
     value = workflow.branchPrefix || "";
     break;
@@ -200,8 +197,8 @@ wf_get_close_check_flag() {
   echo "${value}"
 }
 
-wf_has_adr_for_legacy() {
-  local legacy_id="$1"
+wf_has_adr_for_work_item() {
+  local work_item_id="$1"
   local backlog_file
   backlog_file="$(wf_backlog_file)"
   local adr_index_file
@@ -219,7 +216,7 @@ process.stdout.write(v);
   [ -f "${adr_index_file}" ] || return 1
 
   local token
-  token="$(echo "${legacy_id}" | tr '[:upper:]' '[:lower:]')"
+  token="$(echo "${work_item_id}" | tr '[:upper:]' '[:lower:]')"
   grep -Ei "${token}" "${adr_index_file}" >/dev/null
 }
 

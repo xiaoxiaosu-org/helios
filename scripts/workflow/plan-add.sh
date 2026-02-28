@@ -127,9 +127,9 @@ today="$(wf_now_date)"
   echo
   echo "状态枚举：\`todo\` / \`in_progress\` / \`blocked\` / \`done\`"
   echo
-  echo "| WorkItem | legacy 别名 | 类型 | 标题 | Owner | 状态 | 验收命令 | 证据目录 |"
-  echo "|---|---|---|---|---|---|---|---|"
-  echo "| ${seed_wi} | - | ${seed_kind} | ${seed_title} | ${owner} | ${seed_status} | \`scripts/workflow/run.sh ${seed_wi} progress\` | \`artifacts/workflow/\` |"
+  echo "| WorkItem | 类型 | 标题 | Owner | 状态 | 验收命令 | 证据目录 |"
+  echo "|---|---|---|---|---|---|---|"
+  echo "| ${seed_wi} | ${seed_kind} | ${seed_title} | ${owner} | ${seed_status} | \`scripts/workflow/run.sh ${seed_wi} progress\` | \`artifacts/workflow/\` |"
   echo
   echo "## 推进记录"
   echo

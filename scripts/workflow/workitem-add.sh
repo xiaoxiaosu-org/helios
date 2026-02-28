@@ -16,7 +16,6 @@ usage() {
     --owner "repo-owner" \
     --priority "P1" \
     [--status todo|in_progress|blocked|done] \
-    [--legacy-id "CAP-011"] \
     [--acceptance-cmds "cmd1;cmd2"] \
     [--trigger-paths "path1;path2"] \
     [--required-docs "doc1;doc2"] \
@@ -32,7 +31,6 @@ title=""
 owner=""
 priority=""
 status="todo"
-legacy_id=""
 acceptance_cmds=""
 trigger_paths=""
 required_docs=""
@@ -48,7 +46,6 @@ while [ $# -gt 0 ]; do
     --owner) owner="${2:-}"; shift 2 ;;
     --priority) priority="${2:-}"; shift 2 ;;
     --status) status="${2:-}"; shift 2 ;;
-    --legacy-id) legacy_id="${2:-}"; shift 2 ;;
     --acceptance-cmds) acceptance_cmds="${2:-}"; shift 2 ;;
     --trigger-paths) trigger_paths="${2:-}"; shift 2 ;;
     --required-docs) required_docs="${2:-}"; shift 2 ;;
@@ -99,14 +96,13 @@ const title = process.argv[4];
 const owner = process.argv[5];
 const priority = process.argv[6];
 const status = process.argv[7];
-const legacyId = process.argv[8];
-const acceptanceCmds = process.argv[9];
-const triggerPaths = process.argv[10];
-const requiredDocs = process.argv[11];
-const closeChecks = process.argv[12];
-const branchPrefix = process.argv[13];
-const dependsOn = process.argv[14];
-const today = process.argv[15];
+const acceptanceCmds = process.argv[8];
+const triggerPaths = process.argv[9];
+const requiredDocs = process.argv[10];
+const closeChecks = process.argv[11];
+const branchPrefix = process.argv[12];
+const dependsOn = process.argv[13];
+const today = process.argv[14];
 
 const data = JSON.parse(fs.readFileSync(file, "utf-8"));
 const planToken = planId.replace(/-/g, "");
@@ -148,10 +144,6 @@ const item = {
   },
 };
 
-if (legacyId) {
-  item.legacyId = legacyId;
-}
-
 if (kind === "debt" || kind === "task") {
   item.workflow = {
     branchPrefix: branchPrefix || "",
@@ -170,7 +162,7 @@ data.workItems.push(item);
 
 fs.writeFileSync(file, `${JSON.stringify(data, null, 2)}\n`, "utf-8");
 process.stdout.write(workItemId);
-' "${backlog_file}" "${plan_id}" "${kind}" "${title}" "${owner}" "${priority}" "${status}" "${legacy_id}" "${acceptance_cmds}" "${trigger_paths}" "${required_docs}" "${close_checks}" "${branch_prefix}" "${depends_on}" "${today}"
+' "${backlog_file}" "${plan_id}" "${kind}" "${title}" "${owner}" "${priority}" "${status}" "${acceptance_cmds}" "${trigger_paths}" "${required_docs}" "${close_checks}" "${branch_prefix}" "${depends_on}" "${today}"
 
 echo
 wf_log "新增 WorkItem 成功（请执行 scripts/workflow/backlog.sh build 进行规范化）"
