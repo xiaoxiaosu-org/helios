@@ -205,6 +205,19 @@ jobs:
           mkdir -p artifacts/ci/gate-selftest
           scripts/ci/gate-selftest.sh artifacts/ci/gate-selftest
 
+      - name: Enforce workflow map doc linkage
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          if [ ! -x "scripts/ci/workflow-sync-check.sh" ]; then
+            echo "缺少可执行脚本：scripts/ci/workflow-sync-check.sh"
+            echo "下一步：补齐工作流文档联动检查并赋权：chmod +x scripts/ci/workflow-sync-check.sh"
+            exit 1
+          fi
+
+          scripts/ci/workflow-sync-check.sh changed_files.txt
+
       - name: Enforce tech debt governance
         shell: bash
         run: |

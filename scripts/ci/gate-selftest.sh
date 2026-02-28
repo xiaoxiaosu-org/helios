@@ -138,6 +138,19 @@ expect_fail "tech-debt-governance 超过 7 天未更新且无阻塞说明应失�
   scripts/ci/tech-debt-governance-check.sh --out "${cap_tmp_out}"
 restore_tech_debt
 
+# ---------- workflow-sync 联动检查自测 ----------
+sync_changed_ok="$(mktemp "${TMPDIR:-/tmp}/workflow-sync-ok.XXXXXX")"
+sync_changed_fail="$(mktemp "${TMPDIR:-/tmp}/workflow-sync-fail.XXXXXX")"
+printf '%s\n%s\n' "scripts/ci/arch-check.sh" "docs/02-架构/技术债清单.md" > "${sync_changed_ok}"
+printf '%s\n' "scripts/ci/arch-check.sh" > "${sync_changed_fail}"
+
+expect_pass "workflow-sync 触发改动且同步文档应通过" \
+  scripts/ci/workflow-sync-check.sh "${sync_changed_ok}"
+expect_fail "workflow-sync 触发改动未同步文档应失败" \
+  scripts/ci/workflow-sync-check.sh "${sync_changed_fail}"
+
+rm -f "${sync_changed_ok}" "${sync_changed_fail}"
+
 cleanup_cap
 trap - EXIT
 
