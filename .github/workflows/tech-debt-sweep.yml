@@ -1,0 +1,24 @@
+name: Tech Debt Sweep
+
+on:
+  schedule:
+    - cron: "0 2 * * *"
+  workflow_dispatch:
+
+jobs:
+  tech-debt-sweep:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run tech debt governance check
+        shell: bash
+        run: |
+          set -euo pipefail
+          scripts/ci/tech-debt-governance-check.sh --out artifacts/ci/tech-debt-governance
+
+      - name: Run workflow linkage check
+        shell: bash
+        run: |
+          set -euo pipefail
+          scripts/ci/workflow-sync-check.sh
