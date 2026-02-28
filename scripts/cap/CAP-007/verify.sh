@@ -11,17 +11,38 @@ if [ ! -f "${f}" ]; then
   exit 1
 fi
 
+: "${ARTIFACT_DIR:=artifacts/cap/CAP-007}"
+mkdir -p "${ARTIFACT_DIR}"
+
 if ! rg -n "TD-[0-9]{3}" "${f}" >/dev/null; then
   echo "[CAP-007] 未检测到技术债 ID（TD-XXX）" >&2
   exit 1
 fi
 
-if ! rg -n "Owner|最近更新|验收标准" "${f}" >/dev/null; then
-  echo "[CAP-007] 清单缺少关键字段（Owner/最近更新/验收标准）" >&2
-  exit 1
-fi
+for required_field in "Owner" "最近更新" "验收标准"; do
+  if ! rg -n "\\| ${required_field} \\|" "${f}" >/dev/null; then
+    echo "[CAP-007] 清单缺少关键字段：${required_field}" >&2
+    exit 1
+  fi
+done
 
-if ! rg -n "\\| (Open|In Progress|Blocked|Done) \\|" "${f}" >/dev/null; then
+if ! awk -F'|' '
+  /^\| TD-[0-9]{3} / {
+    valid=0
+    for (i=2; i<=NF-1; i++) {
+      gsub(/^[[:space:]]+|[[:space:]]+$/, "", $i)
+      if ($i ~ /^(Open|In Progress|Blocked|Done)$/) {
+        valid=1
+        break
+      }
+    }
+    if (!valid) {
+      print "[CAP-007] 技术债行状态非法：" $0 > "/dev/stderr"
+      bad=1
+    }
+  }
+  END { exit bad }
+' "${f}"; then
   echo "[CAP-007] 清单中未检测到合法状态值（Open/In Progress/Blocked/Done）" >&2
   exit 1
 fi
