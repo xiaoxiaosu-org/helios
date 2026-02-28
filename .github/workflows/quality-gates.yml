@@ -205,6 +205,20 @@ jobs:
           mkdir -p artifacts/ci/gate-selftest
           scripts/ci/gate-selftest.sh artifacts/ci/gate-selftest
 
+      - name: Enforce tech debt governance
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          if [ ! -x "scripts/ci/tech-debt-governance-check.sh" ]; then
+            echo "缺少可执行脚本：scripts/ci/tech-debt-governance-check.sh"
+            echo "下一步：补齐技术债治理检查并赋权：chmod +x scripts/ci/tech-debt-governance-check.sh"
+            exit 1
+          fi
+
+          mkdir -p artifacts/ci/tech-debt-governance
+          scripts/ci/tech-debt-governance-check.sh --out artifacts/ci/tech-debt-governance
+
       - name: Run project CI gate scripts when business code changed
         shell: bash
         run: |

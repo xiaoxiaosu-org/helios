@@ -19,15 +19,22 @@ if ! rg -n "TD-[0-9]{3}" "${f}" >/dev/null; then
   exit 1
 fi
 
-for required_field in "Owner" "最近更新" "验收标准"; do
+for required_field in "最近更新" "验收标准"; do
   if ! rg -n "\\| ${required_field} \\|" "${f}" >/dev/null; then
     echo "[CAP-007] 清单缺少关键字段：${required_field}" >&2
     exit 1
   fi
 done
 
+if rg -n "\\| Owner \\|" "${f}" >/dev/null; then
+  echo "[CAP-007] 检测到已弃用字段：Owner（单人开发模式已移除）" >&2
+  exit 1
+fi
+
 if ! awk -F'|' '
-  /^\| TD-[0-9]{3} / {
+  /^## 在制技术债/ { section="open"; next }
+  /^## 已完成/ { section="done"; next }
+  section == "open" && /^\| TD-[0-9]{3} / {
     valid=0
     for (i=2; i<=NF-1; i++) {
       gsub(/^[[:space:]]+|[[:space:]]+$/, "", $i)
@@ -49,5 +56,5 @@ fi
 
 {
   echo "通过：${f}"
-  echo "检查项：存在 TD 记录、关键字段、合法状态"
+  echo "检查项：存在 TD 记录、关键字段、合法状态、无 Owner 列"
 } > "${ARTIFACT_DIR}/tech-debt-check.txt"

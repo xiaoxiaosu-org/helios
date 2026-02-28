@@ -119,9 +119,23 @@ expect_fail "CAP-007 缺少关键字段应失败" \
   env ARTIFACT_DIR="${cap_tmp_out}" scripts/cap/CAP-007/verify.sh
 restore_tech_debt
 
-sed -i '0,/| Open |/s//| Pending |/' "${tech_debt_file}"
+sed -i '0,/| In Progress |/s//| Pending |/' "${tech_debt_file}"
 expect_fail "CAP-007 TD 行状态非法应失败" \
   env ARTIFACT_DIR="${cap_tmp_out}" scripts/cap/CAP-007/verify.sh
+restore_tech_debt
+
+# ---------- 技术债治理检查自测 ----------
+expect_pass "tech-debt-governance 正常清单应通过" \
+  scripts/ci/tech-debt-governance-check.sh --out "${cap_tmp_out}"
+
+sed -i 's/| 最近更新 |/| 最近更新时间 |/' "${tech_debt_file}"
+expect_fail "tech-debt-governance 缺少关键字段应失败" \
+  scripts/ci/tech-debt-governance-check.sh --out "${cap_tmp_out}"
+restore_tech_debt
+
+sed -i '0,/2026-02-28/s//2026-02-20/' "${tech_debt_file}"
+expect_fail "tech-debt-governance 超过 7 天未更新且无阻塞说明应失败" \
+  scripts/ci/tech-debt-governance-check.sh --out "${cap_tmp_out}"
 restore_tech_debt
 
 cleanup_cap
