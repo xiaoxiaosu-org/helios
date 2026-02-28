@@ -11,7 +11,7 @@ workflows:
     cap_id: CAP-001
     branch_prefix: cap/CAP-001
     trigger_paths: modules/;apps/;services/;src/;scripts/cap/;scripts/ci/;.github/workflows/
-    required_docs: docs/02-架构/技术债清单.md;docs/02-架构/执行计划/active/PLAN-20260227-工程智能化路线图.md;docs/02-架构/执行计划/workflow-map.yaml;docs/02-架构/执行计划/工作流自动推进闭环.md
+    required_docs: docs/02-架构/技术债清单.md;docs/02-架构/执行计划/active/PLAN-20260227-工程智能化路线图.md;docs/02-架构/执行计划/workflow-map.yaml;docs/02-架构/执行计划/工作流自动推进闭环.md;docs/02-架构/工程治理/Git门禁与模板对照清单.md
     acceptance_cmds: scripts/cap/verify.sh CAP-001;scripts/ci/verify.sh;scripts/docs/git-governance-sync-check.sh
     close_checks: td_must_move_done=false,cap_status_done=false,adr_required=false
 
