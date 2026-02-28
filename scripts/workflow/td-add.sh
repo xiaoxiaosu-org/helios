@@ -20,7 +20,7 @@ usage() {
     [--required-docs "docs/02-架构/技术债清单.md;docs/02-架构/执行计划/workflow-map.yaml"] \
     [--acceptance-cmds "scripts/cap/verify.sh CAP-011;scripts/ci/verify.sh"] \
     [--branch-prefix "cap/CAP-011"] \
-    [--close-checks "td_must_move_done=false,cap_status_done=false,adr_required=false"]
+    [--close-checks "td_must_move_done=false,cap_status_done=true,adr_required=false"]
 EOF
 }
 
@@ -34,7 +34,7 @@ trigger_paths="scripts/cap/;scripts/ci/;.github/workflows/;docs/02-架构/技术
 required_docs="docs/02-架构/技术债清单.md;docs/02-架构/执行计划/workflow-map.yaml"
 acceptance_cmds=""
 branch_prefix=""
-close_checks="td_must_move_done=false,cap_status_done=false,adr_required=false"
+close_checks="td_must_move_done=false,cap_status_done=true,adr_required=false"
 
 while [ $# -gt 0 ]; do
   case "$1" in

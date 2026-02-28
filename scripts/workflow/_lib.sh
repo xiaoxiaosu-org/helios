@@ -161,6 +161,56 @@ wf_row_exists_in_done() {
   ' "${target_file}"
 }
 
+wf_get_meta_field() {
+  local key="$1"
+  awk -F': ' -v key="${key}" '$1 ~ "^[[:space:]]*"key"$" {print $2; exit}' "$(wf_map_file)"
+}
+
+wf_get_close_check_flag() {
+  local close_checks="$1"
+  local key="$2"
+  local value
+  value="$(echo "${close_checks}" | tr ',' '\n' | awk -F'=' -v key="${key}" '$1 ~ key {print $2; exit}')"
+  if [ -z "${value}" ]; then
+    echo "false"
+    return
+  fi
+  echo "${value}"
+}
+
+wf_get_cap_plan_state() {
+  local cap_id="$1"
+  local plan_file
+  plan_file="$(wf_get_meta_field plan_file)"
+  [ -n "${plan_file}" ] || return 1
+  [ -f "${plan_file}" ] || return 1
+
+  awk -F'|' -v cap_id="${cap_id}" '
+    /^\| CAP-[0-9]{3} / {
+      cap=$2
+      state=$7
+      gsub(/^[[:space:]]+|[[:space:]]+$/, "", cap)
+      gsub(/^[[:space:]]+|[[:space:]]+$/, "", state)
+      if (cap == cap_id) {
+        print state
+        exit
+      }
+    }
+  ' "${plan_file}"
+}
+
+wf_has_adr_for_cap() {
+  local cap_id="$1"
+  local adr_index_file
+  adr_index_file="$(wf_get_meta_field adr_index_file)"
+  [ -n "${adr_index_file}" ] || return 1
+  [ -f "${adr_index_file}" ] || return 1
+
+  local cap_token
+  cap_token="$(echo "${cap_id}" | tr '[:upper:]' '[:lower:]')"
+  grep -Ei "${cap_token}" "${adr_index_file}" >/dev/null
+}
+
 wf_help() {
   cat <<'EOF'
 用法：

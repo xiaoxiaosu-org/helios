@@ -60,7 +60,10 @@
 | 门禁自测回归（PR 校验鲁棒性） | `quality-gates.yml` + `scripts/ci/gate-selftest.sh` + `scripts/ci/verify.sh` | 本文件 + 执行计划（PR 校验鲁棒性） + 经验库（PR 校验鲁棒性） | CI 强制 + 本地 verify 强制 |
 | push 事件 diff 回退（before SHA 不可达） | `doc-check.yml` + `quality-gates.yml`（Compute changed files / commit range） | 本文件 + 经验库（PR 校验鲁棒性） | CI 容错（merge-base 回退） |
 | workflow map 文档联动门禁（触发路径必须同步文档） | `quality-gates.yml` + `scripts/ci/workflow-sync-check.sh` + `scripts/ci/verify.sh` | 本文件 + `docs/02-架构/执行计划/workflow-map.yaml` + `docs/02-架构/执行计划/工作流自动推进闭环.md` | CI 强制 + 本地 verify 强制 |
+| CAP 路线图状态与验收结果一致性门禁 | `quality-gates.yml` + `scripts/ci/cap-plan-sync-check.sh` + `scripts/ci/verify.sh` | 本文件 + `docs/02-架构/执行计划/active/PLAN-20260227-工程智能化路线图.md` | CI 强制 + 本地 verify 强制 |
+| 质量评分自动汇总同步门禁 | `quality-gates.yml` + `scripts/docs/update-quality-score.sh` + `scripts/ci/verify.sh` | 本文件 + `docs/02-架构/质量评分与演进.md` | CI 强制 + 本地 verify 强制 |
 | 技术债定时巡检（治理持续化） | `.github/workflows/tech-debt-sweep.yml` + `scripts/ci/tech-debt-governance-check.sh` + `scripts/ci/workflow-sync-check.sh` | 本文件 + 执行计划工作流手册 | schedule + 手动触发 |
+| 文档园艺定时巡检（断链/索引完整性） | `.github/workflows/doc-gardening.yml` + `scripts/docs/gardening.sh` | 本文件 + `docs/02-架构/质量评分与演进.md` | schedule + 手动触发 |
 
 ---
 
@@ -76,6 +79,8 @@
 - hooks 名称与职责
 - 关键本地脚本（`scripts/docs/index-check.sh` / `scripts/docs/rule-files-check.sh` / `scripts/docs/git-governance-sync-check.sh` / `scripts/ci/verify.sh`）
 - 门禁自测脚本（`scripts/ci/gate-selftest.sh`）
+- CAP 状态一致性脚本（`scripts/ci/cap-plan-sync-check.sh`）
+- 质量评分自动汇总脚本（`scripts/docs/update-quality-score.sh`）
 - CAP 验收入口（`scripts/cap/verify.sh CAP-00X`）
 - 临时放宽变量（`HELIOS_ALLOW_COMMIT_MAIN`、`HELIOS_ALLOW_RELAXED_COMMIT_MSG`、`HELIOS_ALLOW_PUSH_MAIN`）
 - 中文提交放宽变量（`HELIOS_ALLOW_NON_ZH_COMMIT_MSG`）

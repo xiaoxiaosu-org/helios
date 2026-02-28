@@ -234,6 +234,33 @@ jobs:
           mkdir -p artifacts/ci/tech-debt-governance
           scripts/ci/tech-debt-governance-check.sh --out artifacts/ci/tech-debt-governance
 
+      - name: Enforce CAP plan state and acceptance result sync
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          if [ ! -x "scripts/ci/cap-plan-sync-check.sh" ]; then
+            echo "缺少可执行脚本：scripts/ci/cap-plan-sync-check.sh"
+            echo "下一步：补齐 CAP 状态一致性脚本并赋权：chmod +x scripts/ci/cap-plan-sync-check.sh"
+            exit 1
+          fi
+
+          mkdir -p artifacts/ci/cap-plan-sync
+          scripts/ci/cap-plan-sync-check.sh --out artifacts/ci/cap-plan-sync
+
+      - name: Enforce quality score doc auto-summary sync
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          if [ ! -x "scripts/docs/update-quality-score.sh" ]; then
+            echo "缺少可执行脚本：scripts/docs/update-quality-score.sh"
+            echo "下一步：补齐质量评分自动汇总脚本并赋权：chmod +x scripts/docs/update-quality-score.sh"
+            exit 1
+          fi
+
+          scripts/docs/update-quality-score.sh --check --sync-out artifacts/ci/cap-plan-sync
+
       - name: Run project CI gate scripts when business code changed
         shell: bash
         run: |
