@@ -3,13 +3,29 @@ set -euo pipefail
 
 here="$(cd "$(dirname "$0")" && pwd)"
 
-td_id="${1:-}"
-phase="${2:-full}"
-
-if [ -z "${td_id}" ]; then
-  echo "用法：scripts/workflow/run.sh TD-001 [start|progress|close|full]" >&2
+cmd="${1:-}"
+if [ -z "${cmd}" ]; then
+  echo "用法：" >&2
+  echo "  scripts/workflow/run.sh TD-001 [start|progress|close|full]" >&2
+  echo "  scripts/workflow/run.sh list [open|done|all]" >&2
+  echo "  scripts/workflow/run.sh add --title ... --impact ... --priority ... --acceptance ... --cap CAP-XXX" >&2
   exit 1
 fi
+
+if [ "${cmd}" = "list" ]; then
+  scope="${2:-open}"
+  "${here}/td-list.sh" "${scope}"
+  exit 0
+fi
+
+if [ "${cmd}" = "add" ]; then
+  shift
+  "${here}/td-add.sh" "$@"
+  exit 0
+fi
+
+td_id="${cmd}"
+phase="${2:-full}"
 
 case "${phase}" in
   start)

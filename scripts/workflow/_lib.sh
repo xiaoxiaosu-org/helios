@@ -167,5 +167,7 @@ wf_help() {
   scripts/workflow/start.sh TD-001
   scripts/workflow/progress.sh TD-001
   scripts/workflow/close.sh TD-001
+  scripts/workflow/td-list.sh [open|done|all]
+  scripts/workflow/td-add.sh --title ... --impact ... --priority ... --acceptance ... --cap CAP-XXX
 EOF
 }
