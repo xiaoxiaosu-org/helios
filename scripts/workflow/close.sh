@@ -18,7 +18,6 @@ WF_WORK_ITEM_ID="${work_item_id}"
 wf_ensure_backlog_exists
 required_docs="$(wf_get_field "${work_item_id}" required_docs || true)"
 close_checks="$(wf_get_field "${work_item_id}" close_checks || true)"
-legacy_id="$(wf_get_field "${work_item_id}" legacy_id || true)"
 today="$(wf_now_date)"
 
 wf_append_event "${work_item_id}" "workflow.close.started" "running" "开始闭环校验" "{}"
@@ -48,10 +47,10 @@ if [ "${dependencies_done}" = "true" ]; then
 fi
 
 adr_required="$(wf_get_close_check_flag "${close_checks}" "adr_required")"
-if [ "${adr_required}" = "true" ] && [ -n "${legacy_id}" ]; then
-  if ! wf_has_adr_for_legacy "${legacy_id}"; then
-    wf_log "闭环失败：ADR 索引未检测到 ${legacy_id} 相关记录（要求 adr_required=true）。" >&2
-    wf_append_event "${work_item_id}" "workflow.close.failed" "failed" "ADR 索引缺少记录: ${legacy_id}"
+if [ "${adr_required}" = "true" ]; then
+  if ! wf_has_adr_for_work_item "${work_item_id}"; then
+    wf_log "闭环失败：ADR 索引未检测到 ${work_item_id} 相关记录（要求 adr_required=true）。" >&2
+    wf_append_event "${work_item_id}" "workflow.close.failed" "failed" "ADR 索引缺少记录: ${work_item_id}"
     exit 1
   fi
 fi
@@ -68,7 +67,6 @@ WF_RUN_DIR="${out_dir}"
 export WF_RUN_DIR
 {
   echo "WorkItem: ${work_item_id}"
-  echo "Legacy: ${legacy_id:--}"
   echo "Date: ${today}"
   echo "Required docs: ${required_docs:-<none>}"
   echo "Close checks: ${close_checks:-<none>}"

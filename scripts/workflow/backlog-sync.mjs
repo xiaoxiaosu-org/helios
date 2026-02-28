@@ -54,9 +54,7 @@ function normalizeItem(item) {
     dependsOnWorkItems: ensureArray(links.dependsOnWorkItems).map(String).map((v) => v.trim()).filter(Boolean),
   };
 
-  if (next.legacyId) {
-    next.legacyId = String(next.legacyId).trim();
-  }
+  delete next.legacyId;
 
   const acceptance =
     typeof next.acceptance === "object" && next.acceptance && !Array.isArray(next.acceptance)

@@ -7,6 +7,11 @@
 - `completed/`：已完成或归档计划（只读历史）
 
 ## 当前计划（active）
+- Harness Engineering能力对齐补齐：`docs/02-架构/执行计划/active/PLAN-20260228-07-Harness-Engineering能力对齐补齐.md`
+- 质量评分与演进机制完善：`docs/02-架构/执行计划/active/PLAN-20260228-06-质量评分与演进机制完善.md`
+- WI清单字段完善与重构机制：`docs/02-架构/执行计划/active/PLAN-20260228-05-WI清单字段完善与重构机制.md`
+- 经验库管理混乱：`docs/02-架构/执行计划/active/PLAN-20260228-04-经验库管理混乱.md`
+- 技术债并入执行计划：`docs/02-架构/执行计划/active/PLAN-20260228-03-技术债并入执行计划.md`
 - P0在制项收敛与退场治理计划：`docs/02-架构/执行计划/active/PLAN-20260228-02-P0在制项收敛与退场治理计划.md`
 - 工程智能化路线图（唯一执行计划）：`docs/02-架构/执行计划/active/PLAN-20260227-01-工程智能化路线图.md`
 - 统一计划模板（WorkItem 最小单元）：`docs/02-架构/执行计划/PLAN-模板-WorkItem.md`
