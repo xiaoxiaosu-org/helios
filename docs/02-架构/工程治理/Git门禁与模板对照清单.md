@@ -56,6 +56,7 @@
 | 会话可见 PR 明细输出 | 协作流程约束 | 本文件 + `AGENTS.md` + `工程治理与门禁.md` + `分支与门禁落地.md` | `scripts/docs/git-governance-sync-check.sh` 校验规则存在 |
 | `CODEOWNERS` 基线 | `quality-gates.yml` | 本文件 + `AGENTS.md` + `工程治理与门禁.md` | CI 强制 |
 | secrets 扫描与 debug print 阻断 | `quality-gates.yml` | 本文件 + `AGENTS.md` + `工程治理与门禁.md` | CI 强制 |
+| 架构依赖方向门禁（CAP-004） | `quality-gates.yml` + `scripts/ci/arch-check.sh` + `scripts/ci/verify.sh` | 本文件 + `docs/02-架构/边界与依赖规则.md` + 执行计划（CAP-004） | CI 强制 + CAP 验收 |
 
 ---
 
