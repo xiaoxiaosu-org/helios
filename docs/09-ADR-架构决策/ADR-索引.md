@@ -19,3 +19,4 @@
 - [ADR-20260228-workitem-legacy-removal-and-plan-expansion](./ADR-20260228-workitem-legacy-removal-and-plan-expansion.md): WorkItem 执行口径收敛与计划体系扩展
 - [ADR-20260301-plan01-cap-exit-bootstrap](./ADR-20260301-plan01-cap-exit-bootstrap.md): PLAN-20260301-01 CAP 退场计划建模决策
 - [ADR-20260301-plan02-openspec-bootstrap](./ADR-20260301-plan02-openspec-bootstrap.md): PLAN-20260301-02 OpenSpec 接入基线决策
+- [ADR-20260301-plan04-command-skill-evolution-bootstrap](./ADR-20260301-plan04-command-skill-evolution-bootstrap.md): PLAN-20260301-04 Command/Skills 能力演进基线决策
