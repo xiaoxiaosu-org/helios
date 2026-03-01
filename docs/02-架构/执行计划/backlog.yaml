@@ -19,18 +19,18 @@
     "adrIndexFile": "docs/09-ADR-架构决策/ADR-索引.md"
   },
   "summary": {
-    "workItemCount": 43,
-    "planCount": 7,
+    "workItemCount": 50,
+    "planCount": 8,
     "statusCount": {
-      "todo": 31,
-      "in_progress": 1,
+      "todo": 37,
+      "in_progress": 2,
       "blocked": 0,
       "done": 11
     },
     "kindCount": {
-      "initiative": 6,
+      "initiative": 7,
       "capability": 10,
-      "task": 19,
+      "task": 25,
       "debt": 8
     }
   },
@@ -1664,6 +1664,206 @@
       },
       "tracking": {
         "eventsFile": "artifacts/workflow/events/WI-PLAN2026022807-09.jsonl"
+      }
+    },
+    {
+      "workItemId": "WI-PLAN2026030101-01",
+      "planId": "PLAN-20260301-01",
+      "kind": "initiative",
+      "title": "制定CAP退场总方案与里程碑",
+      "owner": "repo-owner",
+      "status": "in_progress",
+      "priority": "P0",
+      "lastUpdate": "2026-03-01",
+      "detail": {
+        "note": ""
+      },
+      "links": {
+        "dependsOnWorkItems": []
+      },
+      "acceptance": {
+        "cmds": [],
+        "evidenceDir": ""
+      }
+    },
+    {
+      "workItemId": "WI-PLAN2026030101-02",
+      "planId": "PLAN-20260301-01",
+      "kind": "task",
+      "title": "移除CAP执行入口并统一WI执行语义",
+      "owner": "repo-owner",
+      "status": "todo",
+      "priority": "P0",
+      "lastUpdate": "2026-03-01",
+      "detail": {
+        "note": ""
+      },
+      "links": {
+        "dependsOnWorkItems": []
+      },
+      "acceptance": {
+        "cmds": [],
+        "evidenceDir": "artifacts/workflow/"
+      },
+      "workflow": {
+        "branchPrefix": "",
+        "triggerPaths": [],
+        "requiredDocs": [],
+        "acceptanceCmds": [],
+        "closeChecks": "move_to_done=true,dependencies_done=false,adr_required=false"
+      },
+      "tracking": {
+        "eventsFile": "artifacts/workflow/events/WI-PLAN2026030101-02.jsonl"
+      }
+    },
+    {
+      "workItemId": "WI-PLAN2026030101-03",
+      "planId": "PLAN-20260301-01",
+      "kind": "task",
+      "title": "重构CI门禁为WI状态同步并删除CAP专用检查",
+      "owner": "repo-owner",
+      "status": "todo",
+      "priority": "P0",
+      "lastUpdate": "2026-03-01",
+      "detail": {
+        "note": ""
+      },
+      "links": {
+        "dependsOnWorkItems": []
+      },
+      "acceptance": {
+        "cmds": [],
+        "evidenceDir": "artifacts/workflow/"
+      },
+      "workflow": {
+        "branchPrefix": "",
+        "triggerPaths": [],
+        "requiredDocs": [],
+        "acceptanceCmds": [],
+        "closeChecks": "move_to_done=true,dependencies_done=false,adr_required=false"
+      },
+      "tracking": {
+        "eventsFile": "artifacts/workflow/events/WI-PLAN2026030101-03.jsonl"
+      }
+    },
+    {
+      "workItemId": "WI-PLAN2026030101-04",
+      "planId": "PLAN-20260301-01",
+      "kind": "task",
+      "title": "重写工程治理文档与模板中的CAP术语",
+      "owner": "repo-owner",
+      "status": "todo",
+      "priority": "P0",
+      "lastUpdate": "2026-03-01",
+      "detail": {
+        "note": ""
+      },
+      "links": {
+        "dependsOnWorkItems": []
+      },
+      "acceptance": {
+        "cmds": [],
+        "evidenceDir": "artifacts/workflow/"
+      },
+      "workflow": {
+        "branchPrefix": "",
+        "triggerPaths": [],
+        "requiredDocs": [],
+        "acceptanceCmds": [],
+        "closeChecks": "move_to_done=true,dependencies_done=false,adr_required=false"
+      },
+      "tracking": {
+        "eventsFile": "artifacts/workflow/events/WI-PLAN2026030101-04.jsonl"
+      }
+    },
+    {
+      "workItemId": "WI-PLAN2026030101-05",
+      "planId": "PLAN-20260301-01",
+      "kind": "task",
+      "title": "重写执行计划历史记录并移除CAP编号痕迹",
+      "owner": "repo-owner",
+      "status": "todo",
+      "priority": "P0",
+      "lastUpdate": "2026-03-01",
+      "detail": {
+        "note": ""
+      },
+      "links": {
+        "dependsOnWorkItems": []
+      },
+      "acceptance": {
+        "cmds": [],
+        "evidenceDir": "artifacts/workflow/"
+      },
+      "workflow": {
+        "branchPrefix": "",
+        "triggerPaths": [],
+        "requiredDocs": [],
+        "acceptanceCmds": [],
+        "closeChecks": "move_to_done=true,dependencies_done=false,adr_required=false"
+      },
+      "tracking": {
+        "eventsFile": "artifacts/workflow/events/WI-PLAN2026030101-05.jsonl"
+      }
+    },
+    {
+      "workItemId": "WI-PLAN2026030101-06",
+      "planId": "PLAN-20260301-01",
+      "kind": "task",
+      "title": "重构验收脚本与证据目录到WI命名体系",
+      "owner": "repo-owner",
+      "status": "todo",
+      "priority": "P0",
+      "lastUpdate": "2026-03-01",
+      "detail": {
+        "note": ""
+      },
+      "links": {
+        "dependsOnWorkItems": []
+      },
+      "acceptance": {
+        "cmds": [],
+        "evidenceDir": "artifacts/workflow/"
+      },
+      "workflow": {
+        "branchPrefix": "",
+        "triggerPaths": [],
+        "requiredDocs": [],
+        "acceptanceCmds": [],
+        "closeChecks": "move_to_done=true,dependencies_done=false,adr_required=false"
+      },
+      "tracking": {
+        "eventsFile": "artifacts/workflow/events/WI-PLAN2026030101-06.jsonl"
+      }
+    },
+    {
+      "workItemId": "WI-PLAN2026030101-07",
+      "planId": "PLAN-20260301-01",
+      "kind": "task",
+      "title": "全仓校验与退场发布说明",
+      "owner": "repo-owner",
+      "status": "todo",
+      "priority": "P0",
+      "lastUpdate": "2026-03-01",
+      "detail": {
+        "note": ""
+      },
+      "links": {
+        "dependsOnWorkItems": []
+      },
+      "acceptance": {
+        "cmds": [],
+        "evidenceDir": "artifacts/workflow/"
+      },
+      "workflow": {
+        "branchPrefix": "",
+        "triggerPaths": [],
+        "requiredDocs": [],
+        "acceptanceCmds": [],
+        "closeChecks": "move_to_done=true,dependencies_done=false,adr_required=false"
+      },
+      "tracking": {
+        "eventsFile": "artifacts/workflow/events/WI-PLAN2026030101-07.jsonl"
       }
     }
   ]
