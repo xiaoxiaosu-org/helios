@@ -19,19 +19,19 @@
     "adrIndexFile": "docs/09-ADR-架构决策/ADR-索引.md"
   },
   "summary": {
-    "workItemCount": 57,
-    "planCount": 9,
+    "workItemCount": 65,
+    "planCount": 10,
     "statusCount": {
-      "todo": 43,
-      "in_progress": 3,
+      "todo": 50,
+      "in_progress": 4,
       "blocked": 0,
       "done": 11
     },
     "kindCount": {
-      "initiative": 8,
-      "capability": 10,
-      "task": 31,
-      "debt": 8
+      "initiative": 9,
+      "capability": 12,
+      "task": 35,
+      "debt": 9
     }
   },
   "workItems": [
@@ -2064,6 +2064,274 @@
       },
       "tracking": {
         "eventsFile": "artifacts/workflow/events/WI-PLAN2026030102-07.jsonl"
+      }
+    },
+    {
+      "workItemId": "WI-PLAN2026030104-01",
+      "planId": "PLAN-20260301-04",
+      "kind": "initiative",
+      "title": "建立command与skills系统级/项目级定义基线",
+      "owner": "repo-owner",
+      "status": "in_progress",
+      "priority": "P0",
+      "lastUpdate": "2026-03-01",
+      "detail": {
+        "note": ""
+      },
+      "links": {
+        "dependsOnWorkItems": []
+      },
+      "acceptance": {
+        "cmds": [],
+        "evidenceDir": ""
+      }
+    },
+    {
+      "workItemId": "WI-PLAN2026030104-02",
+      "planId": "PLAN-20260301-04",
+      "kind": "capability",
+      "title": "盘点项目内候选能力并完成command/skills归类矩阵",
+      "owner": "repo-owner",
+      "status": "todo",
+      "priority": "P0",
+      "lastUpdate": "2026-03-01",
+      "detail": {
+        "note": ""
+      },
+      "links": {
+        "dependsOnWorkItems": []
+      },
+      "acceptance": {
+        "cmds": [],
+        "evidenceDir": ""
+      }
+    },
+    {
+      "workItemId": "WI-PLAN2026030104-03",
+      "planId": "PLAN-20260301-04",
+      "kind": "task",
+      "title": "落地第一批command（项目级）并统一模板与触发词",
+      "owner": "repo-owner",
+      "status": "todo",
+      "priority": "P1",
+      "lastUpdate": "2026-03-01",
+      "detail": {
+        "note": ""
+      },
+      "links": {
+        "dependsOnWorkItems": []
+      },
+      "acceptance": {
+        "cmds": [
+          "scripts/ci/verify.sh",
+          "scripts/docs/git-governance-sync-check.sh"
+        ],
+        "evidenceDir": "artifacts/workflow/"
+      },
+      "workflow": {
+        "branchPrefix": "feat/commands-bootstrap",
+        "triggerPaths": [
+          ".github/prompts/",
+          "docs/"
+        ],
+        "requiredDocs": [
+          "docs/02-架构/执行计划/active/PLAN-20260301-04-Command与Skills能力提取与持续演进计划.md"
+        ],
+        "acceptanceCmds": [
+          "scripts/ci/verify.sh",
+          "scripts/docs/git-governance-sync-check.sh"
+        ],
+        "closeChecks": "move_to_done=true,dependencies_done=false,adr_required=false"
+      },
+      "tracking": {
+        "eventsFile": "artifacts/workflow/events/WI-PLAN2026030104-03.jsonl"
+      }
+    },
+    {
+      "workItemId": "WI-PLAN2026030104-04",
+      "planId": "PLAN-20260301-04",
+      "kind": "task",
+      "title": "落地第一批skills（项目级）并补齐脚本/参考资料",
+      "owner": "repo-owner",
+      "status": "todo",
+      "priority": "P1",
+      "lastUpdate": "2026-03-01",
+      "detail": {
+        "note": ""
+      },
+      "links": {
+        "dependsOnWorkItems": []
+      },
+      "acceptance": {
+        "cmds": [
+          "scripts/ci/verify.sh",
+          "scripts/docs/git-governance-sync-check.sh"
+        ],
+        "evidenceDir": "artifacts/workflow/"
+      },
+      "workflow": {
+        "branchPrefix": "feat/skills-bootstrap",
+        "triggerPaths": [
+          ".github/skills/",
+          "docs/"
+        ],
+        "requiredDocs": [
+          "docs/02-架构/执行计划/active/PLAN-20260301-04-Command与Skills能力提取与持续演进计划.md"
+        ],
+        "acceptanceCmds": [
+          "scripts/ci/verify.sh",
+          "scripts/docs/git-governance-sync-check.sh"
+        ],
+        "closeChecks": "move_to_done=true,dependencies_done=false,adr_required=false"
+      },
+      "tracking": {
+        "eventsFile": "artifacts/workflow/events/WI-PLAN2026030104-04.jsonl"
+      }
+    },
+    {
+      "workItemId": "WI-PLAN2026030104-05",
+      "planId": "PLAN-20260301-04",
+      "kind": "task",
+      "title": "建立command/skills文档映射、索引与示例",
+      "owner": "repo-owner",
+      "status": "todo",
+      "priority": "P1",
+      "lastUpdate": "2026-03-01",
+      "detail": {
+        "note": ""
+      },
+      "links": {
+        "dependsOnWorkItems": []
+      },
+      "acceptance": {
+        "cmds": [
+          "scripts/ci/verify.sh",
+          "scripts/docs/library-check.sh all"
+        ],
+        "evidenceDir": "artifacts/workflow/"
+      },
+      "workflow": {
+        "branchPrefix": "docs/command-skill-index",
+        "triggerPaths": [
+          "docs/",
+          "AGENTS.md"
+        ],
+        "requiredDocs": [
+          "docs/README.md",
+          "docs/02-架构/执行计划/README.md"
+        ],
+        "acceptanceCmds": [
+          "scripts/ci/verify.sh",
+          "scripts/docs/library-check.sh all"
+        ],
+        "closeChecks": "move_to_done=true,dependencies_done=false,adr_required=false"
+      },
+      "tracking": {
+        "eventsFile": "artifacts/workflow/events/WI-PLAN2026030104-05.jsonl"
+      }
+    },
+    {
+      "workItemId": "WI-PLAN2026030104-06",
+      "planId": "PLAN-20260301-04",
+      "kind": "task",
+      "title": "将command/skills纳入CI门禁与一致性检查",
+      "owner": "repo-owner",
+      "status": "todo",
+      "priority": "P1",
+      "lastUpdate": "2026-03-01",
+      "detail": {
+        "note": ""
+      },
+      "links": {
+        "dependsOnWorkItems": []
+      },
+      "acceptance": {
+        "cmds": [
+          "scripts/ci/verify.sh",
+          "scripts/docs/git-governance-sync-check.sh"
+        ],
+        "evidenceDir": "artifacts/workflow/"
+      },
+      "workflow": {
+        "branchPrefix": "ci/command-skill-gates",
+        "triggerPaths": [
+          ".github/workflows/",
+          "scripts/ci/",
+          "scripts/docs/"
+        ],
+        "requiredDocs": [
+          "docs/02-架构/工程治理/工程治理与门禁.md"
+        ],
+        "acceptanceCmds": [
+          "scripts/ci/verify.sh",
+          "scripts/docs/git-governance-sync-check.sh"
+        ],
+        "closeChecks": "move_to_done=true,dependencies_done=false,adr_required=false"
+      },
+      "tracking": {
+        "eventsFile": "artifacts/workflow/events/WI-PLAN2026030104-06.jsonl"
+      }
+    },
+    {
+      "workItemId": "WI-PLAN2026030104-07",
+      "planId": "PLAN-20260301-04",
+      "kind": "capability",
+      "title": "建立command/skills质量度量与发布节奏（持续演进）",
+      "owner": "repo-owner",
+      "status": "todo",
+      "priority": "P0",
+      "lastUpdate": "2026-03-01",
+      "detail": {
+        "note": ""
+      },
+      "links": {
+        "dependsOnWorkItems": []
+      },
+      "acceptance": {
+        "cmds": [],
+        "evidenceDir": ""
+      }
+    },
+    {
+      "workItemId": "WI-PLAN2026030104-08",
+      "planId": "PLAN-20260301-04",
+      "kind": "debt",
+      "title": "收敛重复能力与僵尸command/skills并形成退场机制（持续演进）",
+      "owner": "repo-owner",
+      "status": "todo",
+      "priority": "P1",
+      "lastUpdate": "2026-03-01",
+      "detail": {
+        "note": ""
+      },
+      "links": {
+        "dependsOnWorkItems": []
+      },
+      "acceptance": {
+        "cmds": [
+          "scripts/workflow/backlog.sh check",
+          "scripts/ci/verify.sh"
+        ],
+        "evidenceDir": "artifacts/workflow/"
+      },
+      "workflow": {
+        "branchPrefix": "chore/command-skill-prune",
+        "triggerPaths": [
+          ".github/prompts/",
+          ".github/skills/",
+          "docs/"
+        ],
+        "requiredDocs": [
+          "docs/02-架构/执行计划/active/PLAN-20260301-04-Command与Skills能力提取与持续演进计划.md"
+        ],
+        "acceptanceCmds": [
+          "scripts/workflow/backlog.sh check",
+          "scripts/ci/verify.sh"
+        ],
+        "closeChecks": "move_to_done=true,dependencies_done=false,adr_required=false"
+      },
+      "tracking": {
+        "eventsFile": "artifacts/workflow/events/WI-PLAN2026030104-08.jsonl"
       }
     }
   ]
