@@ -17,3 +17,4 @@
 - [ADR-20260228-cap-010-pr-gate-hardening](./ADR-20260228-cap-010-pr-gate-hardening.md): CAP-010 PR 校验鲁棒性增强
 - [ADR-20260228-workitem-single-source-and-plan-seq](./ADR-20260228-workitem-single-source-and-plan-seq.md): WorkItem 单一执行源与计划日内序号策略
 - [ADR-20260228-workitem-legacy-removal-and-plan-expansion](./ADR-20260228-workitem-legacy-removal-and-plan-expansion.md): WorkItem 执行口径收敛与计划体系扩展
+- [ADR-20260301-plan01-cap-exit-bootstrap](./ADR-20260301-plan01-cap-exit-bootstrap.md): PLAN-20260301-01 CAP 退场计划建模决策
