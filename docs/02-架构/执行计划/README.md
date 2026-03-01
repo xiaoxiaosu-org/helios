@@ -7,6 +7,7 @@
 - `completed/`：已完成或归档计划（只读历史）
 
 ## 当前计划（active）
+- OpenSpec能力接入与内建演进计划：`docs/02-架构/执行计划/active/PLAN-20260301-02-OpenSpec能力接入与内建演进计划.md`
 - CAP彻底退场与全历史重构计划：`docs/02-架构/执行计划/active/PLAN-20260301-01-CAP彻底退场与全历史重构计划.md`
 - Harness Engineering能力对齐补齐：`docs/02-架构/执行计划/active/PLAN-20260228-07-Harness-Engineering能力对齐补齐.md`
 - 质量评分与演进机制完善：`docs/02-架构/执行计划/active/PLAN-20260228-06-质量评分与演进机制完善.md`

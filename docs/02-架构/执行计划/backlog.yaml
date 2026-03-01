@@ -19,18 +19,18 @@
     "adrIndexFile": "docs/09-ADR-架构决策/ADR-索引.md"
   },
   "summary": {
-    "workItemCount": 50,
-    "planCount": 8,
+    "workItemCount": 57,
+    "planCount": 9,
     "statusCount": {
-      "todo": 37,
-      "in_progress": 2,
+      "todo": 43,
+      "in_progress": 3,
       "blocked": 0,
       "done": 11
     },
     "kindCount": {
-      "initiative": 7,
+      "initiative": 8,
       "capability": 10,
-      "task": 25,
+      "task": 31,
       "debt": 8
     }
   },
@@ -1864,6 +1864,206 @@
       },
       "tracking": {
         "eventsFile": "artifacts/workflow/events/WI-PLAN2026030101-07.jsonl"
+      }
+    },
+    {
+      "workItemId": "WI-PLAN2026030102-01",
+      "planId": "PLAN-20260301-02",
+      "kind": "initiative",
+      "title": "制定OpenSpec接入基线与阶段目标",
+      "owner": "repo-owner",
+      "status": "in_progress",
+      "priority": "P0",
+      "lastUpdate": "2026-03-01",
+      "detail": {
+        "note": ""
+      },
+      "links": {
+        "dependsOnWorkItems": []
+      },
+      "acceptance": {
+        "cmds": [],
+        "evidenceDir": ""
+      }
+    },
+    {
+      "workItemId": "WI-PLAN2026030102-02",
+      "planId": "PLAN-20260301-02",
+      "kind": "task",
+      "title": "短期兼容接入OpenSpec并建立变更工件目录规范",
+      "owner": "repo-owner",
+      "status": "todo",
+      "priority": "P1",
+      "lastUpdate": "2026-03-01",
+      "detail": {
+        "note": ""
+      },
+      "links": {
+        "dependsOnWorkItems": []
+      },
+      "acceptance": {
+        "cmds": [],
+        "evidenceDir": "artifacts/workflow/"
+      },
+      "workflow": {
+        "branchPrefix": "",
+        "triggerPaths": [],
+        "requiredDocs": [],
+        "acceptanceCmds": [],
+        "closeChecks": "move_to_done=true,dependencies_done=false,adr_required=false"
+      },
+      "tracking": {
+        "eventsFile": "artifacts/workflow/events/WI-PLAN2026030102-02.jsonl"
+      }
+    },
+    {
+      "workItemId": "WI-PLAN2026030102-03",
+      "planId": "PLAN-20260301-02",
+      "kind": "task",
+      "title": "建立OpenSpec到WorkItem和docs/ADR的自动映射",
+      "owner": "repo-owner",
+      "status": "todo",
+      "priority": "P1",
+      "lastUpdate": "2026-03-01",
+      "detail": {
+        "note": ""
+      },
+      "links": {
+        "dependsOnWorkItems": []
+      },
+      "acceptance": {
+        "cmds": [],
+        "evidenceDir": "artifacts/workflow/"
+      },
+      "workflow": {
+        "branchPrefix": "",
+        "triggerPaths": [],
+        "requiredDocs": [],
+        "acceptanceCmds": [],
+        "closeChecks": "move_to_done=true,dependencies_done=false,adr_required=false"
+      },
+      "tracking": {
+        "eventsFile": "artifacts/workflow/events/WI-PLAN2026030102-03.jsonl"
+      }
+    },
+    {
+      "workItemId": "WI-PLAN2026030102-04",
+      "planId": "PLAN-20260301-02",
+      "kind": "task",
+      "title": "将OpenSpec校验接入CI并与现有门禁串联",
+      "owner": "repo-owner",
+      "status": "todo",
+      "priority": "P1",
+      "lastUpdate": "2026-03-01",
+      "detail": {
+        "note": ""
+      },
+      "links": {
+        "dependsOnWorkItems": []
+      },
+      "acceptance": {
+        "cmds": [],
+        "evidenceDir": "artifacts/workflow/"
+      },
+      "workflow": {
+        "branchPrefix": "",
+        "triggerPaths": [],
+        "requiredDocs": [],
+        "acceptanceCmds": [],
+        "closeChecks": "move_to_done=true,dependencies_done=false,adr_required=false"
+      },
+      "tracking": {
+        "eventsFile": "artifacts/workflow/events/WI-PLAN2026030102-04.jsonl"
+      }
+    },
+    {
+      "workItemId": "WI-PLAN2026030102-05",
+      "planId": "PLAN-20260301-02",
+      "kind": "task",
+      "title": "沉淀内建Spec内核设计与数据模型（artifact graph/delta/validate/apply）",
+      "owner": "repo-owner",
+      "status": "todo",
+      "priority": "P1",
+      "lastUpdate": "2026-03-01",
+      "detail": {
+        "note": ""
+      },
+      "links": {
+        "dependsOnWorkItems": []
+      },
+      "acceptance": {
+        "cmds": [],
+        "evidenceDir": "artifacts/workflow/"
+      },
+      "workflow": {
+        "branchPrefix": "",
+        "triggerPaths": [],
+        "requiredDocs": [],
+        "acceptanceCmds": [],
+        "closeChecks": "move_to_done=true,dependencies_done=false,adr_required=false"
+      },
+      "tracking": {
+        "eventsFile": "artifacts/workflow/events/WI-PLAN2026030102-05.jsonl"
+      }
+    },
+    {
+      "workItemId": "WI-PLAN2026030102-06",
+      "planId": "PLAN-20260301-02",
+      "kind": "task",
+      "title": "分阶段替换外部OpenSpec能力并保持结果一致性",
+      "owner": "repo-owner",
+      "status": "todo",
+      "priority": "P1",
+      "lastUpdate": "2026-03-01",
+      "detail": {
+        "note": ""
+      },
+      "links": {
+        "dependsOnWorkItems": []
+      },
+      "acceptance": {
+        "cmds": [],
+        "evidenceDir": "artifacts/workflow/"
+      },
+      "workflow": {
+        "branchPrefix": "",
+        "triggerPaths": [],
+        "requiredDocs": [],
+        "acceptanceCmds": [],
+        "closeChecks": "move_to_done=true,dependencies_done=false,adr_required=false"
+      },
+      "tracking": {
+        "eventsFile": "artifacts/workflow/events/WI-PLAN2026030102-06.jsonl"
+      }
+    },
+    {
+      "workItemId": "WI-PLAN2026030102-07",
+      "planId": "PLAN-20260301-02",
+      "kind": "task",
+      "title": "完成外部依赖退出评审与长期演进机制",
+      "owner": "repo-owner",
+      "status": "todo",
+      "priority": "P1",
+      "lastUpdate": "2026-03-01",
+      "detail": {
+        "note": ""
+      },
+      "links": {
+        "dependsOnWorkItems": []
+      },
+      "acceptance": {
+        "cmds": [],
+        "evidenceDir": "artifacts/workflow/"
+      },
+      "workflow": {
+        "branchPrefix": "",
+        "triggerPaths": [],
+        "requiredDocs": [],
+        "acceptanceCmds": [],
+        "closeChecks": "move_to_done=true,dependencies_done=false,adr_required=false"
+      },
+      "tracking": {
+        "eventsFile": "artifacts/workflow/events/WI-PLAN2026030102-07.jsonl"
       }
     }
   ]
