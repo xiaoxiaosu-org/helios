@@ -59,6 +59,7 @@
 | secrets 扫描与 debug print 阻断 | `quality-gates.yml` | 本文件 + `AGENTS.md` + `工程治理与门禁.md` | CI 强制 |
 | 架构依赖方向门禁（CAP-004） | `quality-gates.yml` + `scripts/ci/arch-check.sh` + `scripts/ci/verify.sh` | 本文件 + `docs/02-架构/边界与依赖规则.md` + 执行计划（CAP-004） | CI 强制 + CAP 验收 |
 | 门禁自测回归（PR 校验鲁棒性） | `quality-gates.yml` + `scripts/ci/gate-selftest.sh` + `scripts/ci/verify.sh` | 本文件 + 执行计划（PR 校验鲁棒性） + 经验库（PR 校验鲁棒性） | CI 强制 + 本地 verify 强制 |
+| workflow-sync 自测样例与 requiredDocs 对齐 | `scripts/ci/gate-selftest.sh` + `scripts/ci/workflow-sync-check.sh` | 本文件 + `docs/02-架构/工程治理/工程治理与门禁.md` | CI 强制（样例失配直接失败） |
 | push 事件 diff 回退（before SHA 不可达） | `doc-check.yml` + `quality-gates.yml`（Compute changed files / commit range） | 本文件 + 经验库（PR 校验鲁棒性） | CI 容错（merge-base 回退） |
 | workflow 文档联动门禁（backlog 唯一执行源） | `quality-gates.yml` + `scripts/ci/workflow-sync-check.sh` + `scripts/ci/verify.sh` | 本文件 + `docs/02-架构/执行计划/backlog.yaml` + `docs/02-架构/执行计划/工作流自动推进闭环.md` | CI 强制 + 本地 verify 强制 |
 | 计划模板一致性门禁（WorkItem 最小单元） | `quality-gates.yml` + `scripts/ci/plan-template-check.sh` + `scripts/ci/verify.sh` | 本文件 + `docs/02-架构/执行计划/PLAN-模板-WorkItem.md` | CI 强制 + 本地 verify 强制 |

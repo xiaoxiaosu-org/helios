@@ -141,7 +141,24 @@ restore_tech_debt
 # ---------- workflow-sync 联动检查自测 ----------
 sync_changed_ok="$(mktemp "${TMPDIR:-/tmp}/workflow-sync-ok.XXXXXX")"
 sync_changed_fail="$(mktemp "${TMPDIR:-/tmp}/workflow-sync-fail.XXXXXX")"
-printf '%s\n%s\n' "scripts/ci/arch-check.sh" "docs/02-架构/执行计划/backlog.yaml" > "${sync_changed_ok}"
+printf '%s\n' "scripts/ci/arch-check.sh" > "${sync_changed_ok}"
+node -e '
+const fs = require("node:fs");
+const data = JSON.parse(fs.readFileSync("docs/02-架构/执行计划/backlog.yaml", "utf-8"));
+const docs = new Set();
+for (const item of data.workItems || []) {
+  if (!["debt", "task"].includes(String(item.kind || ""))) continue;
+  if (String(item.status || "") === "done") continue;
+  const wf = item.workflow || {};
+  for (const doc of wf.requiredDocs || []) {
+    const value = String(doc || "").trim();
+    if (value) docs.add(value);
+  }
+}
+for (const doc of Array.from(docs).sort()) {
+  process.stdout.write(doc + "\n");
+}
+' >> "${sync_changed_ok}"
 printf '%s\n' "scripts/ci/arch-check.sh" > "${sync_changed_fail}"
 
 expect_pass "workflow-sync 触发改动且同步文档应通过" \

@@ -7,6 +7,7 @@
 - `completed/`：已完成或归档计划（只读历史）
 
 ## 当前计划（active）
+- Command与Skills能力提取与持续演进计划：`docs/02-架构/执行计划/active/PLAN-20260301-04-Command与Skills能力提取与持续演进计划.md`
 - OpenSpec能力接入与内建演进计划：`docs/02-架构/执行计划/active/PLAN-20260301-02-OpenSpec能力接入与内建演进计划.md`
 - CAP彻底退场与全历史重构计划：`docs/02-架构/执行计划/active/PLAN-20260301-01-CAP彻底退场与全历史重构计划.md`
 - Harness Engineering能力对齐补齐：`docs/02-架构/执行计划/active/PLAN-20260228-07-Harness-Engineering能力对齐补齐.md`
@@ -28,9 +29,11 @@
 - WorkItem 列表：`scripts/workflow/run.sh list all`
 - 计划初始化（自动分配日内序号）：`scripts/workflow/run.sh plan-add --title "专题标题" --owner "repo-owner"`
 - WorkItem 新增：`scripts/workflow/run.sh add --plan-id PLAN-YYYYMMDD-NN --kind debt --title ... --owner ... --priority P1`
+- 多计划自动推进：`scripts/workflow/run.sh autopilot --plans PLAN-YYYYMMDD-NN,PLAN-YYYYMMDD-NN --max-items-per-plan 1`
 - 统一总览 JSON（待执行任务/系统现状）：`scripts/workflow/run.sh overview json`
 - 本地管理看板（Node）：`scripts/workflow/run.sh overview serve 127.0.0.1 8787`
 - backlog 规范化：`scripts/workflow/run.sh backlog build`
 - backlog 稳定性校验：`scripts/workflow/run.sh backlog check`
 - 计划模板一致性校验：`scripts/ci/plan-template-check.sh`
 - 文档库校验与统一（全量/模块）：`scripts/docs/library-check.sh all` / `scripts/docs/library-check.sh experience`
+- 自动交接卡目录（autopilot）：`artifacts/workflow/handoffs/`

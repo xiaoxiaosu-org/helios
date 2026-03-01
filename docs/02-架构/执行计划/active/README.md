@@ -13,6 +13,7 @@
 - `PLAN-20260228-07-Harness-Engineering能力对齐补齐.md`
 - `PLAN-20260301-01-CAP彻底退场与全历史重构计划.md`
 - `PLAN-20260301-02-OpenSpec能力接入与内建演进计划.md`
+- `PLAN-20260301-04-Command与Skills能力提取与持续演进计划.md`
 
 ## 使用说明
 

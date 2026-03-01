@@ -10,6 +10,7 @@ if [ -z "${cmd}" ]; then
   echo "  scripts/workflow/run.sh list [todo|in_progress|blocked|done|all]" >&2
   echo "  scripts/workflow/run.sh plan-add --title ... [--owner ...]" >&2
   echo "  scripts/workflow/run.sh add --plan-id PLAN-YYYYMMDD-NN --kind debt|task|capability --title ... --owner ... --priority P1" >&2
+  echo "  scripts/workflow/run.sh autopilot --plans PLAN-YYYYMMDD-NN[,PLAN-YYYYMMDD-NN...] [--max-items-per-plan 1] [--continue-on-error]" >&2
   echo "  scripts/workflow/run.sh overview [json [out_file]|serve [host] [port]]" >&2
   echo "  scripts/workflow/run.sh backlog [build|check]" >&2
   exit 1
@@ -31,6 +32,12 @@ fi
 if [ "${cmd}" = "plan-add" ]; then
   shift
   "${here}/plan-add.sh" "$@"
+  exit 0
+fi
+
+if [ "${cmd}" = "autopilot" ]; then
+  shift
+  "${here}/multi-plan-autopilot.sh" "$@"
   exit 0
 fi
 
